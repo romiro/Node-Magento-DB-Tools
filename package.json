@@ -1,0 +1,9 @@
+{
+    "name": "mysql-tunnler",
+    "version": "0.0.1",
+    "dependencies": {
+        "express": "3.x",
+        "mysql": "2.x",
+        "ssh2":"0.2.x"
+    }
+}

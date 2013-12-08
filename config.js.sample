@@ -1,0 +1,20 @@
+var config = {}
+//Static configuration settings, eventually to be mutable by user from web app
+config.ssh = {}
+config.db = {}
+config.web = {}
+
+config.ssh.username = 'sshname';
+config.ssh.password = 'sshpass';
+config.ssh.host = '192.168.1.123';
+config.ssh.port = 22;
+
+config.db.host = "localhost";
+config.db.port = "3406";
+config.db.user = "web";
+config.db.password = "public";
+config.db.database = "magento";
+
+config.web.port = 8800;
+
+module.exports = config;

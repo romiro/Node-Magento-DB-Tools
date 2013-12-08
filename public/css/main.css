@@ -1,0 +1,36 @@
+hr {
+    margin: 1em 0;
+}
+
+#command-output input {
+    width: 100%;
+}
+#notice {
+    display: none;
+}
+
+textarea#localxml {
+    height:150px;
+}
+div.button {
+    margin: 1em 0;
+}
+.btn.select-all-text {
+    margin-top: 4px;
+}
+
+.box-group {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5em 2em;
+}
+.box-group-content {
+    display: none;
+}
+
+#tables-toggle {
+    cursor: pointer;
+}
+a.select-all, a.select-none {
+    cursor: pointer;
+}
