@@ -19,3 +19,10 @@ After that, just
 
     node server.js
     
+And browse to http://localhost:8800 (or whichever port you configured for your web server)
+
+
+### Notes
+* Currently the node server tunnel aspect doesn't have any communication with the web app, it's in proof of concept mode now
+* The page that is served from the root of the server is currently a self-sufficient JS web app (ie, a web server isn't even required).
+* The tool available on the page is fully functional and should be useful in assisting with remote database dumps
