@@ -1,11 +1,11 @@
 var config = require('./config');
-var express = require('express');
 var net = require('net');
 var Connection = require('ssh2');
 var mysql = require('mysql');
+var webServer = require('./lib/webserver');
 
 var MyServer = function(){
-    var app;
+
 //    startServer();
 
     var sshConn = new Connection();
@@ -23,7 +23,7 @@ var MyServer = function(){
         myConn.connect();
 
         //And then start the web server
-        startServer();
+        webServer.startServer();
 
         //Test query
         myConn.query('SELECT * from core_config_data where path like "%url%"', function(err, rows, fields) {
@@ -88,20 +88,7 @@ var MyServer = function(){
         });
     }
 
-    function startServer() {
-        app = express();
-        app.use(express.logger());
-        app.use(express.static(__dirname + '/public'));
 
-        app.use(respNotFound);
-
-        app.listen(config.web.port);
-    }
-
-    function respNotFound(request, response) {
-        response.writeHead(404);
-        response.end("Woah! 404!");
-    }
 };
 
 new MyServer();
