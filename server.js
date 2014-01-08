@@ -87,8 +87,6 @@ var MyServer = function(){
             password: config.ssh.password
         });
     }
-
-
 };
 
 new MyServer();
