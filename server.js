@@ -51,23 +51,29 @@ var MyServer = function(){
             // pipe the connection. Includes callback that is called whenever something
             // connects on host:port defined below at server.listen()
             var server = net.createServer(function(sock){
-                console.log('Server :: connection established');
+                console.log('TunnelServer :: connection established');
 
                 //Set up the SSH forward. Perform forward in callback.
                 sshConn.forwardOut(sock.remoteAddress, sock.remotePort, '127.0.0.1', 3306, function(err, stream){
                     if (err) throw err;
+                    stream.on('data', function(data) {
+                        console.log('')
+                    });
                     sock.pipe(stream);
                     stream.pipe(sock);
                 });
             });
 
             server.on('listening', function(){
-                console.log('Server :: listening');
+                console.log('TunnelServer :: listening');
                 if (typeof callback == 'function') callback();
             });
 
-            console.log('Server :: listen');
-            server.listen(3406);
+            console.log('TunnelServer :: listen');
+            server.listen(12875);
+        });
+        sshConn.on('data', function(data) {
+            console.log('SSH Connection :: data: ' + data);
         });
         sshConn.on('error', function(err) {
             console.log('SSH Connection :: error :: ' + err);
