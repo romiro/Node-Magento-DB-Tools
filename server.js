@@ -2,7 +2,7 @@ var config = require('./config');
 var net = require('net');
 var Connection = require('ssh2');
 var mysql = require('mysql');
-var webServer = require('./lib/webserver');
+var webServer = require('./webserver');
 
 var MyServer = function(){
 
@@ -10,26 +10,25 @@ var MyServer = function(){
 
     var sshConn = new Connection();
 
-    var myConn = mysql.createConnection({
-        host: config.db.host,
-        port: config.db.port,
-        user: config.db.user,
-        password: config.db.password,
-        database: config.db.database
-    });
-
     startSSHTunnel(function(){
+        var myConn = mysql.createConnection({
+            host: config.db.host,
+            port: config.tunnel.port,
+            user: config.db.user,
+            password: config.db.password,
+            database: config.db.database
+        });
+
         //Now we are tunneled, try to connect to mysql
         myConn.connect();
-
-        //And then start the web server
-        webServer.startServer();
-
         //Test query
         myConn.query('SELECT * from core_config_data where path like "%url%"', function(err, rows, fields) {
             if (err) throw err;
             console.log(rows);
         });
+
+        //And then start the web server
+        webServer.startServer();
     });
 
 
@@ -57,7 +56,7 @@ var MyServer = function(){
                 sshConn.forwardOut(sock.remoteAddress, sock.remotePort, '127.0.0.1', 3306, function(err, stream){
                     if (err) throw err;
                     stream.on('data', function(data) {
-                        console.log('')
+                        console.log('STREAM Data :: '+data);
                     });
                     sock.pipe(stream);
                     stream.pipe(sock);
@@ -70,7 +69,7 @@ var MyServer = function(){
             });
 
             console.log('TunnelServer :: listen');
-            server.listen(12875);
+            server.listen(config.tunnel.port);
         });
         sshConn.on('data', function(data) {
             console.log('SSH Connection :: data: ' + data);

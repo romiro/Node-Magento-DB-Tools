@@ -1,13 +1,16 @@
-var config = {}
+var config = {};
 //Static configuration settings, eventually to be mutable by user from web app
-config.ssh = {}
-config.db = {}
-config.web = {}
+config.ssh = {};
+config.tunnel = {};
+config.db = {};
+config.web = {};
 
 config.ssh.username = 'sshname';
 config.ssh.password = 'sshpass';
 config.ssh.host = '192.168.1.123';
 config.ssh.port = 22;
+
+config.tunnel.port = 12973;
 
 config.db.host = "localhost";
 config.db.port = "3406";
