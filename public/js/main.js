@@ -1,7 +1,10 @@
 jQuery(
 function(){
-    var host, username, password, dbname, data;
 
+    var navigation = new Navigation();
+
+
+    var host, username, password, dbname, data;
 
     var firstTemplate = function() {
         return 'mysqldump -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';

@@ -6,8 +6,6 @@ var webServer = require('./webserver');
 
 var MyServer = function(){
 
-//    startServer();
-
     var sshConn = new Connection();
 
     startSSHTunnel(function(){
@@ -20,12 +18,12 @@ var MyServer = function(){
         });
 
         //Now we are tunneled, try to connect to mysql
-        myConn.connect();
+//        myConn.connect();
         //Test query
-        myConn.query('SELECT * from core_config_data where path like "%url%"', function(err, rows, fields) {
-            if (err) throw err;
-            console.log(rows);
-        });
+//        myConn.query('SELECT * from core_config_data where path like "%url%"', function(err, rows, fields) {
+//            if (err) throw err;
+//            console.log(rows);
+//        });
 
         //And then start the web server
         webServer.startServer();
