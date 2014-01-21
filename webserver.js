@@ -1,6 +1,5 @@
 var express = require('express');
 var routes = require('./routes');
-
 var config = require('./config');
 
 var responses = {
@@ -24,11 +23,12 @@ webApp.disable('view cache');
 
 webApp.use(express.logger());
 
-
+//Index action
 webApp.get('/', function(req, resp){
     resp.render('index');
 });
 
+//Static file router
 webApp.use(express.static(__dirname + '/public'));
 
 //Web request action handlers for simple responses
@@ -52,3 +52,5 @@ function respNotFound(request, response) {
 if (module.parent === null) {
     webApp.startServer();
 }
+
+module.exports = webApp;
