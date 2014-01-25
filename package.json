@@ -5,6 +5,7 @@
         "express": "3.x",
         "ejs": "*",
         "mysql": "2.x",
-        "ssh2":"0.2.x"
+        "ssh2":"0.2.x",
+        "socket.io":"*"
     }
 }
