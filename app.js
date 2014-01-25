@@ -14,6 +14,7 @@ var MyServer = function(){
             password: config.db.password,
             database: config.db.database
         });
+/*
 
         //Now we are tunneled, try to connect to mysql
         myConn.connect();
@@ -24,6 +25,7 @@ var MyServer = function(){
             console.log(rows);
         });
 
+*/
         //And then start the web server
         webServer.startServer();
     });

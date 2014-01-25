@@ -50,10 +50,10 @@ function(){
                 filename: $(xml).find('dbname').text() + "-" + getDate() + ".sql"
             };
 
-            var firstCommand = template(firstTemplate(), data);
-            var secondCommand = template(secondTemplate(), data);
-            var fullDumpCommand = template(fullDumpTemplate(), data);
-            var clientCommand = template(clientTemplate(), data);
+            var firstCommand = template(firstTemplate, data);
+            var secondCommand = template(secondTemplate, data);
+            var fullDumpCommand = template(fullDumpTemplate, data);
+            var clientCommand = template(clientTemplate, data);
 
             $('#first-command').val(firstCommand);
             $('#second-command').val(secondCommand);
@@ -93,7 +93,8 @@ function(){
 
     //Helper methods
 
-    function template(string, data) {
+    function template(templateFunction, data) {
+        var string = templateFunction();
         for (var key in data) {
             if (data.hasOwnProperty(key)) {
                 var re = new RegExp("{{"+key+"}}", "gi");

@@ -1,9 +1,10 @@
 var express = require('express');
-var routes = require('./routes');
 var http = require('http');
 var socketIo = require('socket.io');
 
+var routes = require('./routes');
 var config = require('./config');
+var sshConfigReader = require('./lib/ssh-config-reader');
 
 var responses = {
     "getConfig": function(req, resp) {
