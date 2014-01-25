@@ -1,6 +1,7 @@
 var express = require('express');
 var routes = require('./routes');
-
+var http = require('http');
+var socketio = require('socket.io');
 var config = require('./config');
 
 var responses = {
@@ -13,6 +14,8 @@ var responses = {
 };
 
 var webApp = express();
+var ioServer = http.createServer(webApp);
+var io = socketio(webApp);
 
 webApp.locals.config = config;
 webApp.locals.title = 'Magento MySQL Database Multi-Tool';
