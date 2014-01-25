@@ -123,18 +123,18 @@ function(){
         var container = $('#table-checkboxes');
         var len = tables.length;
         for (var i = 0; i < len; i++) {
-            var chkContainer = $('<div class="checkbox col-md-6"></div>');
+            var $chkContainer = $('<div class="col-md-5"></div>').append('<div class="checkbox"></div>');
             var label = $('<label></label>')
                 .text(tables[i])
                 .attr('for', tables[i])
-                .appendTo(chkContainer);
+                .appendTo($chkContainer.children());
             var checkbox = $('<input type="checkbox" />')
                 .attr('name', 'tables')
                 .attr('id', tables[i])
                 .prop('checked', true)
                 .val(tables[i])
                 .appendTo(label);
-            container.append(chkContainer);
+            container.append($chkContainer);
         }
         $('<div style="clear:both"></div>').appendTo(container);
     }
