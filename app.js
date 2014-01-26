@@ -3,9 +3,8 @@ var mysql = require('mysql');
 var webServer = require('./webserver');
 var SSHTunnel = require('./lib/ssh-tunnel');
 
-var MyServer = function(){
-    var sshTunnel = new SSHTunnel();
-    sshTunnel.connect(function(){
+function MyServer(){
+    SSHTunnel.connect(function(){
 
         var myConn = mysql.createConnection({
             host: config.db.host,
@@ -31,7 +30,7 @@ var MyServer = function(){
     });
 
 
-};
+}
 
 new MyServer();
 
