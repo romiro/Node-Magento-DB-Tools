@@ -22,6 +22,7 @@ var io = socketIo.listen(ioServer);
 webApp.locals.config = config;
 webApp.locals.title = 'Magento MySQL Database Multi-Tool';
 webApp.locals.shortTitle = 'Magento DB Tools';
+webApp.locals.sshConfig = sshConfigReader.getHosts();
 
 webApp.set('views', __dirname + '/views');
 webApp.set('view engine', 'ejs');
