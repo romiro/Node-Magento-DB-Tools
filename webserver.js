@@ -1,6 +1,5 @@
 var express = require('express');
 var http = require('http');
-var socketIo = require('socket.io');
 var engine = require('ejs-locals');
 
 var SSHTunnel = require('./lib/ssh-tunnel');
@@ -19,15 +18,16 @@ function WebServer() {
     };
 
     var webApp = express();
-    var ioServer = http.createServer(webApp);
-    var io = socketIo.listen(ioServer);
+    var server = http.createServer(webApp);
+    var socketIo = require('socket.io').listen(server);
 
+    //Setting up global vars to be used in templates/responses
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
     webApp.locals.sshConfig = sshConfigReader.getHosts();
 
-
+    //Setting up web application
     webApp.engine('ejs', engine);
     webApp.set('view engine', 'ejs');
     webApp.set('views', __dirname + '/views');
@@ -35,26 +35,36 @@ function WebServer() {
 
     webApp.use(express.logger());
 
-//Index action
+    //Index action
     webApp.get('/', function(req, resp){
         resp.render('index');
     });
 
-//Static file router
+    //Static file router
     webApp.use(express.static(__dirname + '/public'));
 
-//Web request action handlers for simple responses
+    //Web request action handlers for simple responses
     for (var key in responses) {
         webApp.get("/" + key, responses[key]);
     }
 
-//Last available response sends a 404
+    //Last available response sends a 404
     webApp.use(respNotFound);
 
     this.startServer = function() {
-        webApp.listen(config.web.port);
+        server.listen(config.web.port);
+        setupSocketEvents();
         console.log('Web server now listening for connections on '+config.web.port);
     };
+
+    function setupSocketEvents() {
+        socketIo.sockets.on('connection', function (socket) {
+            socket.emit('news', { hello: 'world' });
+            socket.on('my other event', function (data) {
+                console.log(data);
+            });
+        });
+    }
 
     function respNotFound(request, response) {
         response.writeHead(404);

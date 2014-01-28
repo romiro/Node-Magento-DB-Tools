@@ -3,7 +3,6 @@ function(){
 
     var navigation = new Navigation();
 
-
     var host, username, password, dbname, data;
 
     var firstTemplate = function() {

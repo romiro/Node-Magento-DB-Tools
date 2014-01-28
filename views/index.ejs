@@ -74,3 +74,15 @@
             </div>
         </div>
     </div>
+
+<button class="btn btn-default btn-lg" id="socket-test">Send Socket</button>
+<script>
+    var socket = io.connect('http://localhost');
+    socket.on('news', function (data) {
+        console.log(data);
+        socket.emit('my other event', { my: 'data' });
+    });
+    $('#socket-test').on('click', function(){
+        socket.emit('my other event', { my: 'data' });
+    });
+</script>
