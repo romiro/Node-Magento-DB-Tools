@@ -27,7 +27,6 @@ function WebServer() {
     webApp.locals.shortTitle = 'Magento DB Tools';
     webApp.locals.sshConfig = sshConfigReader.getHosts();
 
-
     webApp.engine('ejs', engine);
     webApp.set('view engine', 'ejs');
     webApp.set('views', __dirname + '/views');
@@ -35,10 +34,7 @@ function WebServer() {
 
     webApp.use(express.logger());
 
-//Index action
-    webApp.get('/', function(req, resp){
-        resp.render('index');
-    });
+    routes.use(webApp);
 
 //Static file router
     webApp.use(express.static(__dirname + '/public'));
@@ -56,9 +52,10 @@ function WebServer() {
         console.log('Web server now listening for connections on '+config.web.port);
     };
 
-    function respNotFound(request, response) {
-        response.writeHead(404);
-        response.end("Woah! 404!");
+    function respNotFound(req, resp) {
+        resp.status(404);
+        resp.render('errors/404');
+        resp.end();
     }
 }
 
