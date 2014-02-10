@@ -9,43 +9,41 @@ var config = require('./config');
 var sshConfigReader = require('./lib/ssh-config-reader');
 
 function WebServer() {
-    var responses = {
-        "getConfig": function(req, resp) {
-            resp.end(JSON.stringify(config));
-        },
-        "setConfig": function(req, resp) {
-            console.log(req.data);
-        }
-    };
 
     var webApp = express();
-    var ioServer = http.createServer(webApp);
-    var io = socketIo.listen(ioServer);
+//    var ioServer = http.createServer(webApp);
+//    var io = socketIo.listen(ioServer);
 
+    //Local variables configuration
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
     webApp.locals.sshConfig = sshConfigReader.getHosts();
 
+
+    //Variables for use in request responses
+    webApp.sshTunnel = SSHTunnel;
+
+
+    //Views setup
     webApp.engine('ejs', engine);
     webApp.set('view engine', 'ejs');
     webApp.set('views', __dirname + '/views');
     webApp.disable('view cache');
 
+
+    //Routing chain
     webApp.use(express.logger());
+    webApp.use(express.bodyParser());
 
     routes.use(webApp);
 
-//Static file router
     webApp.use(express.static(__dirname + '/public'));
 
-//Web request action handlers for simple responses
-    for (var key in responses) {
-        webApp.get("/" + key, responses[key]);
-    }
-
-//Last available response sends a 404
     webApp.use(respNotFound);
+
+    //End routing chain
+
 
     this.startServer = function() {
         webApp.listen(config.web.port);

@@ -1,18 +1,20 @@
 var config = require('./config');
 var mysql = require('mysql');
 var webServer = require('./webserver');
-var SSHTunnel = require('./lib/ssh-tunnel');
 
 function MyServer(){
-    SSHTunnel.connect(function(){
 
-        var myConn = mysql.createConnection({
-            host: config.db.host,
-            port: config.tunnel.port,
-            user: config.db.user,
-            password: config.db.password,
-            database: config.db.database
-        });
+    webServer.startServer();
+
+//    SSHTunnel.connect(function(){
+//
+//        var myConn = mysql.createConnection({
+//            host: config.db.host,
+//            port: config.tunnel.port,
+//            user: config.db.user,
+//            password: config.db.password,
+//            database: config.db.database
+//        });
 /*
 
         //Now we are tunneled, try to connect to mysql
@@ -25,9 +27,8 @@ function MyServer(){
         });
 
 */
-        //And then start the web server
-        webServer.startServer();
-    });
+
+//    });
 
 
 }
