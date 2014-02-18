@@ -1,76 +1,77 @@
 <% layout('layout') %>
+<% script('/js/index.js') %>
 
-    <h1><%= title %></h1>
-    <div id="notice"></div>
-    <div id="form">
+<h1><%= title %></h1>
+<div id="notice"></div>
+<div id="form">
 
-        <label for="localxml">Paste your local.xml contents here, either entire file or &lt;resources&gt; node:</label>
-        <div class="textarea">
-            <textarea id="localxml" name="localxml" class="form-control"></textarea>
-        </div>
+    <label for="localxml">Paste your local.xml contents here, either entire file or &lt;resources&gt; node:</label>
+    <div class="textarea">
+        <textarea id="localxml" name="localxml" class="form-control"></textarea>
+    </div>
 
 
-        <h3><span class="glyphicon glyphicon-collapse-down" id="tables-toggle"></span> Database Tables </h3>
-        <div class="row">
-            <div class="box-group">
-                <div class="box-group-content" id="tables-content">
-                    <div id="table-controls">
-                        <a class="select-all">Select All</a> |
-                        <a class="select-none">Select None</a>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <div id="table-checkboxes">
-                    </div>
+    <h3><span class="glyphicon glyphicon-collapse-down" id="tables-toggle"></span> Database Tables </h3>
+    <div class="row">
+        <div class="box-group">
+            <div class="box-group-content" id="tables-content">
+                <div id="table-controls">
+                    <a class="select-all">Select All</a> |
+                    <a class="select-none">Select None</a>
                 </div>
-            </div>
-        </div>
-
-        <div class="button">
-            <button class="btn btn-primary" type="button" id="parse-localxml">Parse local.xml</button>
-        </div>
-
-        <hr />
-
-        <div class="row">
-            <div class="col-md-8">
-                <div id="command-output">
-                    <h3>Commands to Run:</h3>
-                    <div class="form-group">
-                        <label for="first-command">Run this first:</label>
-                        <input type="text" class="form-control" id="first-command" />
-                        <button class="btn btn-default btn-xs select-all-text">Select all</button>
-                    </div>
-                    <div class="form-group">
-                        <label for="second-command">Run this next:</label>
-                        <input type="text" class="form-control" id="second-command" />
-                        <button class="btn btn-default btn-xs select-all-text">Select all</button>
-                    </div>
-
-                    <h3>Other Useful Commands</h3>
-
-                    <div class="form-group">
-                        <label for="fulldump-command">Full MySQL dump piped through gzip:</label>
-                        <input type="text" class="form-control" id="fulldump-command" />
-                        <button class="btn btn-default btn-xs select-all-text">Select all</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="client-command">Access MySQL Client:</label>
-                        <input type="text" class="form-control" id="client-command" />
-                        <button class="btn btn-default btn-xs select-all-text">Select all</button>
-                    </div>
-                </div>
-
-
-
-            </div>
-            <div class="col-md-4">
-                <h3>Easy Copy:</h3>
-                <div class="form-group">
-                    <label for="first-command">Password:</label>
-                    <input type="text" class="form-control" id="password" />
-                    <button class="btn btn-default btn-xs select-all-text">Select all</button>
+                <div style="clear:both;"></div>
+                <div id="table-checkboxes">
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="button">
+        <button class="btn btn-primary" type="button" id="parse-localxml">Parse local.xml</button>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <div id="command-output">
+                <h3>Commands to Run:</h3>
+                <div class="form-group">
+                    <label for="first-command">Run this first:</label>
+                    <input type="text" class="form-control" id="first-command" />
+                    <button class="btn btn-default btn-xs select-all-text">Select all</button>
+                </div>
+                <div class="form-group">
+                    <label for="second-command">Run this next:</label>
+                    <input type="text" class="form-control" id="second-command" />
+                    <button class="btn btn-default btn-xs select-all-text">Select all</button>
+                </div>
+
+                <h3>Other Useful Commands</h3>
+
+                <div class="form-group">
+                    <label for="fulldump-command">Full MySQL dump piped through gzip:</label>
+                    <input type="text" class="form-control" id="fulldump-command" />
+                    <button class="btn btn-default btn-xs select-all-text">Select all</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="client-command">Access MySQL Client:</label>
+                    <input type="text" class="form-control" id="client-command" />
+                    <button class="btn btn-default btn-xs select-all-text">Select all</button>
+                </div>
+            </div>
+
+
+
+        </div>
+        <div class="col-md-4">
+            <h3>Easy Copy:</h3>
+            <div class="form-group">
+                <label for="first-command">Password:</label>
+                <input type="text" class="form-control" id="password" />
+                <button class="btn btn-default btn-xs select-all-text">Select all</button>
+            </div>
+        </div>
+    </div>
+</div>

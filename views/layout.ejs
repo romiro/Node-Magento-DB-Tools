@@ -2,12 +2,14 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <script type="text/javascript" src="/js/lib/jquery-1.10.2.js"></script>
-    <script type="text/javascript" src="/js/lib/jquery-ui-1.10.3.custom.min.js"></script>
-    <script type="text/javascript" src="/js/lib/bootstrap.min.js"></script>
+    <script src="/js/lib/jquery-1.10.2.js"></script>
+    <script src="/js/lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="/js/lib/bootstrap.min.js"></script>
 
-    <script type="text/javascript" src="js/navigation.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/main.js"></script>
+    
+    <%-scripts %>
 
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
     <link rel="stylesheet" type="text/css" href="css/bootflat.css" />
@@ -15,6 +17,8 @@
     <link rel="stylesheet" type="text/css" href="css/font-awesome.css" />
     <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.10.3.custom.min.css" />
     <link rel="stylesheet" type="text/css" href="css/main.css" />
+
+    <%-stylesheets %>
 
     <title><%- title %></title>
 </head>
