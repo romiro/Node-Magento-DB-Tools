@@ -1,29 +1,34 @@
+var config;
 $(function(){
-    setupEvents();
 
-    $.ajax({
-        url: "/getConfig",
-        type: "get",
-        success: function(data){
+    function Configuration() {
+        this.setupEvents();
+        this.buildConfig();
+    }
+
+    Configuration.prototype.buildConfig = function() {
+        var successCallback = function(data) {
             if (typeof data.ssh != 'undefined') {
-                buildConfigForm(data.ssh, 'SSH', 'ssh');
+                this.buildConfigForm(data.ssh, 'SSH', 'ssh');
             }
 
             if (typeof data.db != 'undefined') {
-                buildConfigForm(data.db, 'MySQL', 'db');
+                this.buildConfigForm(data.db, 'MySQL', 'db');
             }
-        }
-    });
+        }.bind(this);
 
-    $.ajax({
-        url: "/getSshConfig",
-        type: "get",
-        success: function(data) {
-            var sshConfigData = data;
-        }
-    });
+        this.getConfig(successCallback);
+    };
 
-    function setupEvents() {
+    Configuration.prototype.getConfig = function (successCallback) {
+        $.ajax({
+            url: "/getConfig",
+            type: "get",
+            success: successCallback
+        });
+    };
+
+    Configuration.prototype.setupEvents = function() {
         $('#config-save').on('click', function(){
             var data = $('#config-form').find(':input').serialize();
             $.ajax({
@@ -32,10 +37,9 @@ $(function(){
                 data: data
             });
         });
-    }
+    };
 
-
-    function buildConfigForm(data, label, group) {
+    Configuration.prototype.buildConfigForm = function(data, label, group) {
         var container = $('<fieldset><h3></h3></fieldset>').appendTo('#config-inputs');
         container.attr('name', group.toLowerCase()).attr('form', 'config-form');
         container.find('h3').text(label + ' Settings');
@@ -49,5 +53,18 @@ $(function(){
                 container.append(e);
             }
         }
-    }
+    };
+
+    Configuration.prototype.getSshConfig = function() {
+        $.ajax({
+            url: "/getSshConfig",
+            type: "get",
+            success: function(data) {
+                var sshConfigData = data;
+            }
+        });
+    };
+
+    config = new Configuration();
+
 });
