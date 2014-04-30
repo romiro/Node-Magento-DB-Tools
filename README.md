@@ -26,3 +26,28 @@ And browse to http://localhost:8800 (or whichever port you configured for your w
 * Currently the node server tunnel aspect doesn't have any communication with the web app, it's in proof of concept mode now
 * The page that is served from the root of the server is currently a self-sufficient JS web app (ie, a web server isn't even required).
 * The tool available on the page is fully functional and should be useful in assisting with remote database dumps
+
+
+
+### TODO
+* Configuration Options
+    * Download path in user's filesystem for SCP downloads of database dumps
+
+* Site Profile system
+    * Has own page for administration CRUD
+    * Create and store profiles for client sites with the following data:
+        * Relevant SSH login credentials
+        * System path of production environment on SSH server
+        
+* Running of DB sanitization commands through SSH
+    * New page, using elements from data sanitization view
+        * Option: Either full-dump mode or selectively using certain tables
+        * Option: Database table checkboxes for ignore-table params
+        * Option: Download file via scp from server after creation
+
+    * Connect to SSH server using site profile
+        * Find local.xml using system path defined in system profile
+        * Extract DB information from <resources> node of local.xml
+        * Use same JS functions as frontend page to create mysqldump commands
+        * Run mysqldump commands as defined with user request
+        * If chosen, run scp command from local SSH to grab file from server into defined download directory

@@ -2,11 +2,11 @@
   "name": "mysql-tunnler",
   "version": "0.0.1",
   "dependencies": {
-    "express": "3.x",
-    "ejs": "*",
-    "mysql": "2.x",
-    "ssh2": "0.2.x",
-    "socket.io": "*",
+    "express": "~3.4.8",
+    "ejs": "~0.8.5",
+    "mysql": "~2.1.0",
+    "ssh2": "~0.2.17",
+    "socket.io": "~0.9.16",
     "ejs-locals": "~1.0.2"
   }
 }
