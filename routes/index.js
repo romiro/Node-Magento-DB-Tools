@@ -1,9 +1,10 @@
+'use strict';
 var config = require('../config');
+var JsonStore = require('../lib/json-store');
 
 function Routes() {}
 
-
-Routes.prototype.use = function(webApp) {
+Routes.prototype.use = function (webApp) {
 
     webApp.get('/', function(req, resp){
         resp.render('index');
@@ -27,6 +28,15 @@ Routes.prototype.use = function(webApp) {
                 }
             }
         }
+    });
+
+    webApp.get('/site-profiles', function(req, resp){
+        resp.render('site-profiles');
+    });
+
+    var siteProfiles = new JsonStore('site-profiles');
+    webApp.get('/getSiteProfiles', function(req, resp){
+        resp.json(siteProfiles.get)
     });
 
     webApp.get('/getSshConfig', function(req, resp){

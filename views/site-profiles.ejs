@@ -1,0 +1,20 @@
+<% layout('layout') %>
+<div class="col md-6">
+    <div class="panel panel-primary">
+        <div class="panel-heading"></div>
+        <div class="panel-body"></div>
+    </div>
+</div>
+<script>
+(function(){
+    var siteProfiles;
+    var successCallback = function(data) {
+        siteProfiles = data;
+    };
+    $.ajax({
+        url: '/getSiteProfiles',
+        dataType: 'json',
+        success: successCallback
+    });
+})();
+</script>

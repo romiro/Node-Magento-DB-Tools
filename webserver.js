@@ -1,24 +1,22 @@
 var express = require('express');
 var http = require('http');
-var socketIo = require('socket.io');
 var engine = require('ejs-locals');
 
 var SSHTunnel = require('./lib/ssh-tunnel');
+var SSHConfigReader = require('./lib/ssh-config-reader');
 var routes = require('./routes');
 var config = require('./config');
-var sshConfigReader = require('./lib/ssh-config-reader');
+
 
 function WebServer() {
 
     var webApp = express();
-//    var ioServer = http.createServer(webApp);
-//    var io = socketIo.listen(ioServer);
 
     //Local variables configuration
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
-    webApp.locals.sshConfig = sshConfigReader.getHosts();
+    webApp.locals.sshConfig = SSHConfigReader.getHosts();
 
 
     //Variables for use in request responses
