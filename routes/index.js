@@ -1,6 +1,7 @@
 'use strict';
 var config = require('../config');
 var JsonStore = require('../lib/json-store');
+var SSHConn = require('../lib/ssh-conn');
 
 function Routes() {}
 
@@ -43,6 +44,21 @@ Routes.prototype.use = function (webApp) {
         resp.json(webApp.locals.sshConfig);
     }.bind(webApp));
 
+    webApp.get('/connectSSH', function(req, resp){
+        var conn = new SSHConn();
+        conn.connect(function(){
+            conn.connection.exec('who', function(err, stream){
+                var out = '';
+                stream.on('data', function(data, extended){
+                    out += data;
+                });
+                stream.on('exit', function(){
+                    resp.end(out);
+                    conn.connection.end();
+                })
+            });
+        });
+    });
 };
 
 module.exports = new Routes();
