@@ -1,20 +1,101 @@
 <% layout('layout') %>
-<div class="col md-6">
+<div id="site-profiles">
+
+</div>
+
+<div id="profile-template">
     <div class="panel panel-primary">
-        <div class="panel-heading"></div>
-        <div class="panel-body"></div>
+        <div class="panel-body">
+            <form>
+                <div class="form-group">
+                    <!--<label for="profile-name"></label>-->
+                    <input type="text" class="form-control" name="profile-name" placeholder="Profile Name" />
+                </div>
+
+                <div class="form-group ssh-config"></div>
+
+                <div class="form-group">
+                    <input type="text" class="form-control" name="site-path" placeholder="Path to Magento" />
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 <script>
-(function(){
+
+function SiteProfiles() {
     var siteProfiles;
-    var successCallback = function(data) {
-        siteProfiles = data;
-    };
+    var $template = $('#profile-template').children().first().clone();
+    var $container = $('#site-profiles');
+
+    //Populate site profiles data
     $.ajax({
         url: '/getSiteProfiles',
         dataType: 'json',
-        success: successCallback
+        success: function(data) {
+            siteProfiles = data;
+            afterProfiles();
+        }
     });
-})();
+
+    function afterProfiles() {
+        Tools.getSshConfig(function(data){
+            //Add SSH Config values to select, pulled from ajax json response
+            var $select = $('<select class="form-control" name="ssh-config-name"></select>');
+            $select.append('<option value="">Select an SSH Config entry...</option>');
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    $select.append($('<option></option>').val(key).text(data[key]['label']));
+                }
+            }
+            $template.find('.ssh-config').append($select);
+
+            //Follow-up with creating the Add block from the generated template
+            createAddBlock();
+            setupEvents();
+        });
+    }
+
+    function setupEvents() {
+        $container.on('click', '.add-new .add-button', function(event){
+            var $addContainer = $(event.target).parents('.add-new');
+            var $inputs = $addContainer.find(':input').not(':button');
+            var errors = false;
+            $container.find('.error').remove();
+
+            $inputs.each(function(i, input){
+                console.log(input);
+                if ($(input).val() == '') {
+                    $(input).after('<span class="error text-danger">Value cannot be empty.</span>');
+                    errors = true;
+                }
+            });
+
+            if (errors) {
+                $container.prepend('<div class="error alert alert-danger">Please fix the errors and re-submit</div>');
+                return false;
+            }
+
+            $.ajax({
+                url: '/addSiteProfile',
+                type: 'POST',
+                dataType: 'json',
+                data: $inputs.serialize()
+            });
+
+        });
+    }
+
+    function createAddBlock() {
+        var $addBlock = $template.clone().addClass('add-new');
+        $addBlock.prepend('<div class="panel-heading">New Site Profile</div>');
+        $addBlock.find('.panel-body').append($('<div class="buttons"><button type="button" class="add-button btn btn-success">Add</button></div>'));
+        $container.append($addBlock);
+    }
+
+}
+
+$(function(){
+    var siteProfiles = new SiteProfiles();
+});
 </script>

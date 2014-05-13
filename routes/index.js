@@ -37,7 +37,18 @@ Routes.prototype.use = function (webApp) {
 
     var siteProfiles = new JsonStore('site-profiles');
     webApp.get('/getSiteProfiles', function(req, resp){
-        resp.json(siteProfiles.get)
+        resp.json(siteProfiles.getAll());
+    });
+
+    webApp.post('/addSiteProfile', function(req, resp){
+        var data = {
+            profileName: req.body['profile-name'],
+            sitePath: req.body['site-path'],
+            sshConfigName: req.body['ssh-config-name']
+        };
+        var key = data.profileName.replace(/[^a-zA-Z0-9 ]/, '').replace(/ /, '-');
+        siteProfiles.set(key, data);
+        siteProfiles.save();
     });
 
     webApp.get('/getSshConfig', function(req, resp){
