@@ -52,6 +52,7 @@ function SiteProfiles() {
 
             //Follow-up with creating the Add block from the generated template
             createAddBlock();
+            renderProfiles();
             setupEvents();
         });
     }
@@ -86,11 +87,21 @@ function SiteProfiles() {
         });
     }
 
+    function renderProfiles() {
+        $.each(siteProfiles, function(i, profile){
+            var $profile = $template.clone();
+            $profile.find(':input[name=profile-name]').val(profile['profileName']);
+            $profile.find(':input[name=ssh-config-name]').val(profile['sshConfigName']);
+            $profile.find(':input[name=site-path]').val(profile['sitePath']);
+            $container.append($profile);
+        });
+    }
+
     function createAddBlock() {
         var $addBlock = $template.clone().addClass('add-new');
         $addBlock.prepend('<div class="panel-heading">New Site Profile</div>');
         $addBlock.find('.panel-body').append($('<div class="buttons"><button type="button" class="add-button btn btn-success">Add</button></div>'));
-        $container.append($addBlock);
+        $container.prepend($addBlock);
     }
 
 }
