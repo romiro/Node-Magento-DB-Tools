@@ -46,7 +46,7 @@ Routes.prototype.use = function (webApp) {
 
     webApp.get('/connectSSH', function(req, resp){
         var conn = new SSHConn();
-        conn.connect(function(){
+        conn.connect(config.ssh, function(){
             conn.connection.exec('who', function(err, stream){
                 var out = '';
                 stream.on('data', function(data, extended){
