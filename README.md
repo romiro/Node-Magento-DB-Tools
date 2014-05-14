@@ -34,10 +34,10 @@ And browse to http://localhost:8800 (or whichever port you configured for your w
     * Download path in user's filesystem for SCP downloads of database dumps
 
 * Site Profile system
-    * Has own page for administration CRUD
+    * Has own page for administration CRUD ✔
     * Create and store profiles for client sites with the following data:
-        * Relevant SSH login credentials
-        * System path of production environment on SSH server
+        * Relevant SSH login credentials pulled from .ssh/config ✔
+        * System path of production environment on SSH server ✔
         
 * Running of DB sanitization commands through SSH
     * New page, using elements from data sanitization view

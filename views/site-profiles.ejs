@@ -72,10 +72,9 @@ function SiteProfiles() {
             $.ajax({
                 url: '/saveSiteProfile',
                 type: 'POST',
-                dataType: 'json',
                 data: $inputs.serialize(),
                 success: function() {
-
+                    document.location = document.location;
                 }
             });
         });
@@ -102,18 +101,20 @@ function SiteProfiles() {
 
     function renderProfiles() {
         $.each(siteProfiles, function(i, profile){
-            var $profile = $template.clone().addClass('edit-profile');
+            var $profile = $template.clone().addClass('edit-profile panel-primary');
             $profile.find(':input[name=key]').val(i);
             $profile.find(':input[name=profile-name]').val(profile['profileName']);
             $profile.find(':input[name=ssh-config-name]').val(profile['sshConfigName']);
             $profile.find(':input[name=site-path]').val(profile['sitePath']);
+
+            $profile.prepend($('<div class="panel-heading"></div>').text(profile['profileName']));
             $profile.find('.panel-body').append('<div class="buttons"><button type="button" class="save-button btn btn-primary">Save</button></div>');
             $container.append($profile);
         });
     }
 
     function createAddBlock() {
-        var $addBlock = $template.clone().addClass('add-profile');
+        var $addBlock = $template.clone().addClass('add-profile panel-success');
         $addBlock.prepend('<div class="panel-heading">New Site Profile</div>');
         $addBlock.find('.panel-body').append($('<div class="buttons"><button type="button" class="save-button btn btn-success">Add</button></div>'));
         $container.prepend($addBlock);
