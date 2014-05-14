@@ -40,15 +40,16 @@ Routes.prototype.use = function (webApp) {
         resp.json(siteProfiles.getAll());
     });
 
-    webApp.post('/addSiteProfile', function(req, resp){
+    webApp.post('/saveSiteProfile', function(req, resp){
+        var key = req.body['key'] ? req.body['key'] : null;
         var data = {
             profileName: req.body['profile-name'],
             sitePath: req.body['site-path'],
             sshConfigName: req.body['ssh-config-name']
         };
-        var key = data.profileName.replace(/[^a-zA-Z0-9 ]/, '').replace(/ /, '-');
         siteProfiles.set(key, data);
         siteProfiles.save();
+        resp.end();
     });
 
     webApp.get('/getSshConfig', function(req, resp){

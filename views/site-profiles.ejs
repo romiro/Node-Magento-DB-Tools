@@ -7,14 +7,18 @@
     <div class="panel panel-primary">
         <div class="panel-body">
             <form>
+                <input type="hidden" name="key" />
                 <div class="form-group">
-                    <!--<label for="profile-name"></label>-->
+                    <label for="profile-name">Profile Name</label>
                     <input type="text" class="form-control" name="profile-name" placeholder="Profile Name" />
                 </div>
 
-                <div class="form-group ssh-config"></div>
+                <div class="form-group ssh-config">
+                    <label for="ssh-config-name">SSH Config Name</label>
+                </div>
 
                 <div class="form-group">
+                    <label for="site-path">Path to Magento</label>
                     <input type="text" class="form-control" name="site-path" placeholder="Path to Magento" />
                 </div>
             </form>
@@ -58,49 +62,60 @@ function SiteProfiles() {
     }
 
     function setupEvents() {
-        $container.on('click', '.add-new .add-button', function(event){
-            var $addContainer = $(event.target).parents('.add-new');
-            var $inputs = $addContainer.find(':input').not(':button');
-            var errors = false;
-            $container.find('.error').remove();
-
-            $inputs.each(function(i, input){
-                console.log(input);
-                if ($(input).val() == '') {
-                    $(input).after('<span class="error text-danger">Value cannot be empty.</span>');
-                    errors = true;
-                }
-            });
-
-            if (errors) {
-                $container.prepend('<div class="error alert alert-danger">Please fix the errors and re-submit</div>');
+        //New button
+        $container.on('click', '.save-button', function(event){
+            var $inputContainer = $(event.target).parents('.panel-primary');
+            var $inputs = $inputContainer.find(':input').not(':button');
+            if (!validate($inputs)) {
                 return false;
             }
-
             $.ajax({
-                url: '/addSiteProfile',
+                url: '/saveSiteProfile',
                 type: 'POST',
                 dataType: 'json',
-                data: $inputs.serialize()
-            });
+                data: $inputs.serialize(),
+                success: function() {
 
+                }
+            });
         });
+    }
+
+    function validate($inputs) {
+        var errors = false;
+        $container.find('.error').remove();
+        $inputs = $inputs.not('[type=hidden]');
+
+        $inputs.each(function(i, input){
+            if ($(input).val() == '') {
+                $(input).after('<span class="error text-danger">Value cannot be empty.</span>');
+                errors = true;
+            }
+        });
+
+        if (errors) {
+            Tools.addAlert('Please fix the errors and re-submit', {className:'error', type:'danger'});
+            return false;
+        }
+        return true;
     }
 
     function renderProfiles() {
         $.each(siteProfiles, function(i, profile){
-            var $profile = $template.clone();
+            var $profile = $template.clone().addClass('edit-profile');
+            $profile.find(':input[name=key]').val(i);
             $profile.find(':input[name=profile-name]').val(profile['profileName']);
             $profile.find(':input[name=ssh-config-name]').val(profile['sshConfigName']);
             $profile.find(':input[name=site-path]').val(profile['sitePath']);
+            $profile.find('.panel-body').append('<div class="buttons"><button type="button" class="save-button btn btn-primary">Save</button></div>');
             $container.append($profile);
         });
     }
 
     function createAddBlock() {
-        var $addBlock = $template.clone().addClass('add-new');
+        var $addBlock = $template.clone().addClass('add-profile');
         $addBlock.prepend('<div class="panel-heading">New Site Profile</div>');
-        $addBlock.find('.panel-body').append($('<div class="buttons"><button type="button" class="add-button btn btn-success">Add</button></div>'));
+        $addBlock.find('.panel-body').append($('<div class="buttons"><button type="button" class="save-button btn btn-success">Add</button></div>'));
         $container.prepend($addBlock);
     }
 
