@@ -1,25 +1,155 @@
 <% layout('layout') %>
 <div id="database">
     <div class="row">
-        <ul class="list-group col-md-8">
+
+        <form name="database-form" id="database-form">
+        <ul class="list-group col-md-8" id="database-inputs">
             <li class="list-group-item">
                 <h4 class="list-group-item-heading">Pick a site profile to use</h4>
                 <div class="site-profile"></div>
             </li>
+            <li class="list-group-item">
+                <h4 class="list-group-item-heading">Password or Public Key</h4>
+                <div id="pass-or-key">
+                    <div class="form-group">
+                        <label class="radio-inline">
+                            <input type="radio" name="pass-or-key" class="key" value="key" />
+                            Use Local Private Key
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="pass-or-key" class="password" value="password" />
+                            Use Password
+                        </label>
+                    </div>
+                </div>
+            </li>
+
+            <li class="list-group-item">
+                <h4 class="list-group-item-heading">Selective or Full Dump</h4>
+                <div id="dump-type">
+                    <div class="form-group">
+                        <label class="radio-inline">
+                            <input type="radio" name="dump-type" class="selective" value="selective" />
+                            Selective Table Dump
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="dump-type" class="full" value="full" />
+                            Full Dump
+                        </label>
+                    </div>
+                </div>
+            </li>
         </ul>
+        </form>
+
+        <div class="col-md-4" id="database-display">
+            <div class="form-group">
+                <label>Site Profile</label>
+                <p class="form-control site-profile"></p>
+            </div>
+            <div class="form-group">
+                <label>SSH Host</label>
+                <p class="form-control site-host"></p>
+            </div>
+            <div class="form-group">
+                <label>SSH Username</label>
+                <p class="form-control site-username"></p>
+            </div>
+            <div class="form-group">
+                <label>SSH Authentication Method</label>
+                <p class="form-control site-auth"></p>
+            </div>
+            <div class="form-group">
+                <label>Type of Dump</label>
+                <p class="form-control dump-type"></p>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <script>
 function DatabasePage() {
-    
-    Tools.getSiteProfilesSelect(function($select){
-        $('div.site-profile').append($select);
 
+    var siteProfiles, sshConfig;
+    var $display = $('#database-display');
+    var $inputContainer = $('#database-inputs');
+
+    Tools.getSiteProfilesSelect(function($select, data){
+        $('div.site-profile').append($select);
+        siteProfiles = data;
+        Tools.getSshConfig(function(data){
+            sshConfig = data;
+        });
     });
+
+    setupEvents();
+    setupDefaults();
+
+
+    /**
+     * Sets up events
+     */
+    function setupEvents() {
+
+        //Site Profile
+        $inputContainer.on('change', 'select[name=site-profile]', function(event){
+            var key = $(this).val();
+            var selectedProfile = siteProfiles[key];
+            var selectedSshConfig = sshConfig[selectedProfile['sshConfigName']];
+            $display.find('.site-profile').text(selectedProfile['profileName']);
+            $display.find('.site-host').text(selectedSshConfig['host']);
+            $display.find('.site-username').text(selectedSshConfig['user']);
+        });
+
+
+        //Password or Key
+        $('input[type=radio][name=pass-or-key]').on('click', function(event){
+            var $passContainer = $('#pass-or-key');
+            var $label = $('<span class="label label-info"></span>');
+            $display.find('.site-auth .label').remove();
+
+            if ($(event.target).val() == 'password') {
+                var $input = $('<div class="form-group" id="password-container"><label for="password">Password</label><input type="text" class="form-control"  name="password" /></div>');
+                $passContainer.append($input);
+                $display.find('.site-auth').append($label.text('Password'));
+            }
+            else {
+                $('#password-container').remove();
+                $display.find('.site-auth').append($label.text('Private Key'));
+            }
+        });
+
+        //Type of DB dump
+        $('input[type=radio][name=dump-type]').on('click', function(event){
+            var $typeContainer = $('#dump-type');
+            var $label = $('<span class="label label-info"></span>');
+            $display.find('.dump-type .label').remove();
+
+            if ($(event.target).val() == 'selective') {
+                //TODO: Pull in table checkboxes from /index
+
+
+                $display.find('.dump-type').append($label.text('Selective'));
+            }
+            else {
+                //TODO: Remove/hide table checkboxes
+                $display.find('.dump-type').append($label.text('Full'));
+            }
+        });
+    }
+
+    /**
+     * Sets up form defaults on page load
+     */
+    function setupDefaults() {
+        $('input[type=radio][name=pass-or-key].key').trigger('click');
+        $('input[type=radio][name=dump-type].selective').trigger('click');
+    }
+
 }
 
 $(function(){
-var databasePage = new DatabasePage();
+    var databasePage = new DatabasePage();
 });
 </script>

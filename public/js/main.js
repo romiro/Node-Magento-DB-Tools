@@ -33,7 +33,7 @@ var Tools = {
                     $select.append($('<option></option>').val(key).text(data[key]['profileName']));
                 }
             }
-            callback($select);
+            callback($select, data);
         });
     },
 
