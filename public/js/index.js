@@ -85,6 +85,18 @@ jQuery(function(){
                 $(this).removeClass('glyphicon-collapse-up').addClass('glyphicon-collapse-down');
             }
         });
+
+        if (localStorage) {
+            var $textArea = $('textarea#localxml');
+            $textArea.on('keyup', function(event){
+                var text = $(this).val();
+                localStorage.setItem('localxml', text);
+            });
+            var localXml = localStorage.getItem('localxml');
+            if (localXml) {
+                $textArea.val(localXml);
+            }
+        }
     }
 
     //Helper methods

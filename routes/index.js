@@ -31,6 +31,7 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
+    //Site Profiles
     webApp.get('/site-profiles', function(req, resp){
         resp.render('site-profiles');
     });
@@ -52,10 +53,16 @@ Routes.prototype.use = function (webApp) {
         resp.end();
     });
 
+    //Auto DB Sanitizer & Downloader
+    webApp.get('/database', function(req, resp){
+        resp.render('database');
+    });
+
     webApp.get('/getSshConfig', function(req, resp){
         resp.json(webApp.locals.sshConfig);
     }.bind(webApp));
 
+    //Testing action
     webApp.get('/connectSSH', function(req, resp){
         var conn = new SSHConn();
         conn.connect(config.ssh, function(){

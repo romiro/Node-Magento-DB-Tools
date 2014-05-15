@@ -16,6 +16,27 @@ var Tools = {
         });
     },
 
+    getSiteProfiles: function(callback) {
+        $.ajax({
+            url: '/getSiteProfiles',
+            dataType: 'json',
+            success: callback
+        });
+    },
+
+    getSiteProfilesSelect: function(callback) {
+        Tools.getSiteProfiles(function(data){
+            var $select = $('<select class="form-control" name="site-profile"></select>');
+            $select.append('<option value="">Select a site profile...</option>');
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    $select.append($('<option></option>').val(key).text(data[key]['profileName']));
+                }
+            }
+            callback($select);
+        });
+    },
+
     /**
      * Takes three options in object: className, type (based on bootstrap styles), and clear.
      * If clear is set to false, existing alerts will not be removed prior to displaying
