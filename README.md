@@ -21,12 +21,15 @@ After that, just
     
 And browse to http://localhost:8800 (or whichever port you configured for your web server)
 
+Grunt is installed and there is a less and watch task in there, but the compiled css and map files are committed with each change.
+
+To see utilize the .map file in your browser, run this from project root: cd public/css; ln -s ../../less
+
 
 ### Notes
-* Currently the node server tunnel aspect doesn't have any communication with the web app, it's in proof of concept mode now
-* The page that is served from the root of the server is currently a self-sufficient JS web app (ie, a web server isn't even required).
-* The tool available on the page is fully functional and should be useful in assisting with remote database dumps
-
+* ~~Currently the node server tunnel aspect doesn't have any communication with the web app, it's in proof of concept mode now~~
+* The tool available on the root page is fully functional and should be useful in assisting with remote database dumps
+* The automatic dump aspect is currently in development. Do not expect it to work.
 
 
 ### TODO
@@ -40,14 +43,14 @@ And browse to http://localhost:8800 (or whichever port you configured for your w
         * System path of production environment on SSH server ✔
         
 * Running of DB sanitization commands through SSH
-    * New page, using elements from data sanitization view
+    * New page, using elements from data sanitization view ✔
         * Option: Either full-dump mode or selectively using certain tables
         * Option: Database table checkboxes for ignore-table params
         * Option: Download file via scp from server after creation
 
     * Connect to SSH server using site profile
         * Find local.xml using system path defined in system profile
-        * Extract DB information from <resources> node of local.xml
+        * Extract DB information from &lt;resources> node of local.xml
         * Use same JS functions as frontend page to create mysqldump commands
         * Run mysqldump commands as defined with user request
         * If chosen, run scp command from local SSH to grab file from server into defined download directory
