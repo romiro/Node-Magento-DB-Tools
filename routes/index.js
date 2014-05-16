@@ -7,6 +7,8 @@ function Routes() {}
 
 Routes.prototype.use = function (webApp) {
 
+    var io = webApp.locals.io;
+
     webApp.get('/', function(req, resp){
         resp.render('index');
     });
@@ -55,8 +57,25 @@ Routes.prototype.use = function (webApp) {
 
     //Auto DB Sanitizer & Downloader
     webApp.get('/database', function(req, resp){
+        var io = webApp.locals.io;
+
         resp.render('database');
     });
+
+    webApp.post('/testDatabaseConnection', function(req, resp){
+        console.log(req.body);
+    });
+
+    //Socket events for db page
+    var databaseIo = io.of('/database'); //Use namespace
+    databaseIo.on('connection', function(socket){
+        console.log('db socket connect');
+        socket.on('test-connection', function(){
+            console.log('Got test connect');
+        });
+    });
+
+
 
     webApp.get('/getSshConfig', function(req, resp){
         resp.json(webApp.locals.sshConfig);
@@ -78,6 +97,8 @@ Routes.prototype.use = function (webApp) {
             });
         });
     });
+
+
 };
 
 module.exports = new Routes();

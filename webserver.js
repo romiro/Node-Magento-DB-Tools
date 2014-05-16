@@ -1,6 +1,8 @@
+'use strict';
 var express = require('express');
 var http = require('http');
 var engine = require('ejs-locals');
+var socketIo = require('socket.io');
 
 var SSHTunnel = require('./lib/ssh-tunnel');
 var SSHConfigReader = require('./lib/ssh-config-reader');
@@ -11,17 +13,16 @@ var config = require('./config');
 function WebServer() {
 
     var webApp = express();
+    var server = http.createServer(webApp);
+    var io = socketIo.listen(server);
+
 
     //Local variables configuration
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
     webApp.locals.sshConfig = SSHConfigReader.getHosts();
-
-
-    //Variables for use in request responses
-    webApp.sshTunnel = SSHTunnel;
-
+    webApp.locals.io = io;
 
     //Views setup
     webApp.engine('ejs', engine);
@@ -44,7 +45,7 @@ function WebServer() {
 
 
     this.startServer = function() {
-        webApp.listen(config.web.port);
+        server.listen(config.web.port);
         console.log('Web server now listening for connections on '+config.web.port);
     };
 
