@@ -59,7 +59,7 @@
             </div>
             <div class="form-group">
                 <label>SSH Authentication Method</label>
-                <p class="form-control site-auth"></p>
+                <p class="form-control site-auth"><span class="label label-info"></span></p>
             </div>
             <div class="form-group">
                 <label>Type of Dump</label>
@@ -127,18 +127,18 @@ function DatabasePage() {
 
         //Password or Key
         $('input[type=radio][name=pass-or-key]').on('click', function(event){
-            var $passContainer = $('#pass-or-key');
-            var $label = $('<span class="label label-info"></span>');
-            $display.find('.site-auth .label').remove();
+            var $formContainer = $('#pass-or-key');
+            var $passContainer = $('#password-container');
+            var $label = $display.find('.site-auth .label');
 
-            if ($(event.target).val() == 'password') {
+            if ($(event.target).val() == 'password' && $passContainer.length < 1) {
                 var $input = $('<div class="form-group" id="password-container"><label for="password">Password</label><input type="text" class="form-control"  name="password" /></div>');
-                $passContainer.append($input);
-                $display.find('.site-auth').append($label.text('Password'));
+                $formContainer.append($input);
+                $label.text('Password');
             }
-            else {
-                $('#password-container').remove();
-                $display.find('.site-auth').append($label.text('Private Key'));
+            else if ($(event.target).val() == 'key') {
+                $passContainer.remove();
+                $label.text('Private Key');
             }
         });
 
