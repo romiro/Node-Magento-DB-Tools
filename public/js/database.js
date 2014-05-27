@@ -3,6 +3,7 @@ function DatabasePage() {
     var siteProfiles, sshConfig;
     var databaseIo = io.connect('/database');
 
+    var $container = $('#database');
     var $display = $('#database-display');
     var $inputContainer = $('#database-inputs');
     var $tableCheckboxTemplate = $('#table-checkboxes-template').remove().children();
@@ -73,8 +74,10 @@ function DatabasePage() {
 
         //Action buttons
         $('#test-connection').on('click', function(event){
-            if ($('#site-profile'))
             var $inputs = $('#database-form').find(':input').not(':button');
+            if (!Tools.validate($inputs, $container)) {
+                return false;
+            }
             $.ajax({
                 url: '/testDatabaseConnection',
                 dataType: 'json',

@@ -33,6 +33,9 @@ To see utilize the .map file in your browser, run this from project root: cd pub
 
 
 ### TODO
+* DB Tool
+    * Add --skip-lock-tables and --single-transaction to dump command as to not lock tables
+
 * Configuration Options
     * Download path in user's filesystem for SCP downloads of database dumps
 

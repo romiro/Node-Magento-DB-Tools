@@ -1,5 +1,4 @@
 @import "bootstrap/bootstrap";
-@import 'site-profiles';
 
 hr {
     margin: 1em 0;
@@ -38,6 +37,29 @@ a.select-all, a.select-none {
     cursor: pointer;
 }
 
+
+//Site Profiles
+#profile-template {
+    display: none;
+}
+
+#site-profiles {
+    .buttons {
+        .save-button {
+            float: right;
+        }
+        .delete-button {
+            float: left;
+        }
+    }
+    .add-profile {
+        label {
+            color: @panel-success-text;
+        }
+    }
+}
+
+//Database page
 #database {
     .list-group-item-heading {
         margin-bottom: 12px;

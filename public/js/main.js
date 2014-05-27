@@ -37,6 +37,25 @@ var Tools = {
         });
     },
 
+    validate: function validate($inputs, $container) {
+        var errors = false;
+        $container.find('.error').remove();
+        $inputs = $inputs.not('[type=hidden]');
+
+        $inputs.each(function(i, input){
+            if ($(input).val() == '') {
+                $(input).after('<span class="error text-danger">Value cannot be empty.</span>');
+                errors = true;
+            }
+        });
+
+        if (errors) {
+            Tools.addAlert('Please fix the errors and re-submit', {className:'error', type:'danger'});
+            return false;
+        }
+        return true;
+    },
+
     /**
      * Takes three options in object: className, type (based on bootstrap styles), and clear.
      * If clear is set to false, existing alerts will not be removed prior to displaying
