@@ -4,8 +4,7 @@ var http = require('http');
 var engine = require('ejs-locals');
 var socketIo = require('socket.io');
 
-var SSHTunnel = require('./lib/ssh-tunnel');
-var SSHConfigReader = require('./lib/ssh-config-reader');
+//var SSHTunnel = require('./lib/ssh-tunnel');
 var routes = require('./routes');
 var config = require('./config');
 
@@ -21,7 +20,6 @@ function WebServer() {
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
-    webApp.locals.sshConfig = SSHConfigReader.getHosts();
     webApp.locals.io = io;
 
     //Views setup

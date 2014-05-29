@@ -50,7 +50,7 @@ var Tools = {
         });
 
         if (errors) {
-            Tools.addAlert('Please fix the errors and re-submit', {className:'error', type:'danger'});
+            Tools.addAlert('Please fix the errors and re-submit', {className:'error', type:'danger', container: $container});
             return false;
         }
         return true;
@@ -65,16 +65,17 @@ var Tools = {
      */
     addAlert: function(message, options) {
         var $alert = $('<div class="alert"></div>');
-        var $container = $('.main-container');
+        var $container = options.container ? $(options.container) : $('.main-container');
+        var type = 'danger';
+
         if (options.className) {
             $alert.addClass(options.className);
         }
         if (options.type) {
-            $alert.addClass('alert-'+options.type);
+            type = options.type;
         }
-        else {
+        $alert.addClass('alert-'+type);
 
-        }
         if (typeof options.clear == 'undefined' || options.clear == true) {
             $container.find('.alert').remove();
         }

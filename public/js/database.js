@@ -58,7 +58,6 @@ function DatabasePage() {
             var $label = $display.find('.dump-type .label');
 
             if ($(event.target).val() == 'selective' && $tableContainer.length < 1) {
-                //TODO: Pull in table checkboxes from /index
                 var $checkboxes = $tableCheckboxTemplate.clone();
                 $typeContainer.append($checkboxes);
                 setupTableCheckboxes();
@@ -66,7 +65,6 @@ function DatabasePage() {
                 $label.text('Selective');
             }
             else if ($(event.target).val() == 'full') {
-                //TODO: Remove/hide table checkboxes
                 $tableContainer.remove();
                 $label.text('Full');
             }
@@ -84,7 +82,6 @@ function DatabasePage() {
                 type: 'POST',
                 data: $inputs.serialize()
             });
-            databaseIo.emit('test-connection');
         });
     }
 
@@ -99,6 +96,9 @@ function DatabasePage() {
     function setupSocket() {
         databaseIo.on('connect', function(){
             console.log('db socket connect');
+            databaseIo.on('db-message', function(message){
+                console.log('FROM SOCKET :: db-message', message);
+            });
         });
     }
 

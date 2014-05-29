@@ -1,13 +1,15 @@
 'use strict';
+
+var util = require('util');
+
 var config = require('../config');
 var JsonStore = require('../lib/json-store');
 var SSHConn = require('../lib/ssh-conn');
+var SSHConfig = require('../lib/ssh-config-reader');
 
 function Routes() {}
 
 Routes.prototype.use = function (webApp) {
-
-    var io = webApp.locals.io;
 
     webApp.get('/', function(req, resp){
         resp.render('index');
@@ -57,25 +59,56 @@ Routes.prototype.use = function (webApp) {
 
     //Auto DB Sanitizer & Downloader
     webApp.get('/database', function(req, resp){
-        var io = webApp.locals.io;
-
         resp.render('database');
     });
 
     webApp.post('/testDatabaseConnection', function(req, resp){
-        console.log(req.body);
-    });
+        var data = req.body;
+        var siteProfile = siteProfiles.get(data['site-profile']);
+        var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
 
-    //Socket events for db page
-    var databaseIo = io.of('/database'); //Use namespace
-    databaseIo.on('connection', function(socket){
-        console.log('db socket connect');
-        socket.on('test-connection', function(){
-            console.log('Got test connect');
+        var sshOptions = {
+            host: sshConfig['host'],
+            port: 22,
+            username: sshConfig['user']
+        };
+
+        //Determine if password or key, setup object to pass to new SSHConn as appropriate
+        if (data['pass-or-key'] == 'password') {
+            sshOptions['password'] = data['password'];
+        }
+
+        //Attempt a connect, pass error if no go
+        var conn = new SSHConn();
+        conn.onReady(function(){
+            //Confirm directory defined in siteProfile exists
+
+//            var command = util.format('cd %s', siteProfile['sitePath']);
+            var command = util.format('cd %s', '/asdasd/asdasd/asdasd');
+            conn.connection.exec(command, function(err, stream){
+                if (err) {
+                    console.log(err);
+                    resp.end();
+                }
+                console.log(stream);
+            });
+
+//            console.log(util.format('Connected to %s!', siteProfile['sshConfigName']));
+
+
+
+            //Determine that mysqldump command is available
         });
+
+        conn.connect(sshOptions);
+
+
+//        console.log(req.body);
     });
 
-
+    //Pass handling to other module in my crazy unpatterned way
+//    var dbSocketHandler = require('./sockets/db');
+//    dbSocketHandler.init(webApp);
 
     webApp.get('/getSshConfig', function(req, resp){
         resp.json(webApp.locals.sshConfig);
