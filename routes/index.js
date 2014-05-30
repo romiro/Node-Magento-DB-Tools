@@ -136,7 +136,7 @@ Routes.prototype.use = function (webApp) {
 //    dbSocketHandler.init(webApp);
 
     webApp.get('/getSshConfig', function(req, resp){
-        resp.json(webApp.locals.sshConfig);
+        resp.json(SSHConfig.getHosts());
     }.bind(webApp));
 
     //Testing action
