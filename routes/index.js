@@ -64,6 +64,7 @@ Routes.prototype.use = function (webApp) {
 
     webApp.post('/testDatabaseConnection', function(req, resp){
         var data = req.body;
+        var returnJson = {};
         var siteProfile = siteProfiles.get(data['site-profile']);
         var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
 
@@ -83,27 +84,51 @@ Routes.prototype.use = function (webApp) {
         conn.onReady(function(){
             //Confirm directory defined in siteProfile exists
 
-//            var command = util.format('cd %s', siteProfile['sitePath']);
-            var command = util.format('cd %s', '/asdasd/asdasd/asdasd');
+            var command = util.format('cd %s', siteProfile['sitePath']);
+//            var command = util.format('cd %s', '/asdasd/asdasd/asdasd');
             conn.connection.exec(command, function(err, stream){
                 if (err) {
                     console.log(err);
-                    resp.end();
+                    resp.end(err);
                 }
-                console.log(stream);
+                stream.on('exit', function(exitCode){
+                    if (exitCode == 1) {
+                        returnJson['message'] = util.format('Directory %s does not exist on server', siteProfile['sitePath']);
+                        resp.json(returnJson);
+                    }
+                    else {
+                        checkMysqldump();
+                    }
+                });
             });
 
-//            console.log(util.format('Connected to %s!', siteProfile['sshConfigName']));
 
-
-
-            //Determine that mysqldump command is available
         });
+
+        //Determine that mysqldump command is available
+        function checkMysqldump() {
+            conn.connection.exec('mysqldump', function(err, stream){
+                if (err) {
+                    console.log(err);
+                    resp.end(err);
+                }
+                stream.on('data', function(data){
+                    console.log('DATA', ''+data);
+                });
+                stream.on('exit', function(exitCode){
+                    if (exitCode == 127) { //127 = command not found
+                        returnJson['message'] = 'mysqldump command does not exist or is not accessible on server!';
+                    }
+                    else {
+                        returnJson['message'] = 'Production directory found, and mysqldump command exists';
+                    }
+                    resp.json(returnJson);
+                });
+            });
+        }
 
         conn.connect(sshOptions);
 
-
-//        console.log(req.body);
     });
 
     //Pass handling to other module in my crazy unpatterned way
