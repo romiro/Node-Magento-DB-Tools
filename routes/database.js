@@ -1,8 +1,8 @@
 var util = require('util');
 var path = require('path');
 
-var xpath = require('xpath');
-var xmldom = require('xmldom');
+var libxmljs = require("libxmljs");
+var _ = require('underscore');
 
 var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
@@ -145,29 +145,31 @@ DatabaseRoute.prototype.use = function(webApp) {
 
 function LocalXmlParser() {
     var host, username, password, dbname, data;
+    var firstTemplate, secondTemplate, fullDumpTemplate, clientTemplate;
     var ignoredTables = [];
 
-    var firstTemplate = function() {
-        return 'mysqldump -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
-    };
+    firstTemplate = 'mysqldump -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
 
-    var secondTemplate = function(){
+    secondTemplate = function(){
         var string = 'mysqldump -h{{host}} -u{{username}} -p';
-        $('#table-checkboxes').find('input[type=checkbox]:checked').each(function(){
-            string += ' --ignore-table={{table_prefix}}{{dbname}}.' + $(this).val();
+
+        _.each(ignoredTables, function(value){
+            string += ' --ignore-table={{table_prefix}}{{dbname}}.' + value;
         });
         string += " {{dbname}} >> {{filename}}";
         return string;
     };
 
-    var fullDumpTemplate = function() {
-        return 'mysqldump -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
-    };
+    fullDumpTemplate = 'mysqldump -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
 
-    var clientTemplate = function(){
-        return 'mysql -h{{host}} -u{{username}} -p {{dbname}}';
-    };
+    clientTemplate = 'mysql -h{{host}} -u{{username}} -p {{dbname}}';
 
+    this.commands = {};
+
+    /**
+     * Sets private var for ignored tables
+     * @param tables
+     */
     this.setIgnoredTables = function(tables) {
         ignoredTables = tables;
     };
@@ -178,35 +180,34 @@ function LocalXmlParser() {
      * @param localXml
      */
     this.parse = function(localXml) {
-        var xmlDoc = new xmldom.DOMParser().parseFromString(localXml);
+        /* @var xml ElementTree */
+        var xmlDoc = libxmljs.parseXml(localXml);
 
-        var prefixNode = xpath.select("//db/table_prefix", xmlDoc);
-        var tablePrefix = '';
-        if (prefixNode.length) {
-            tablePrefix = prefixNode[0].toString();
-        }
+        var tablePrefix = xmlDoc.get('//db/table_prefix').text();
 
-        var dbNode = xpath.select("//resources/default_setup/connection", xmlDoc)[0];
+        var dbNode = xmlDoc.get('//resources/default_setup/connection');
+        var dbName = dbNode.get('//dbname').text();
 
         data = {
-            host: dbNode.select("//host")[0].toString(),
-            username: dbNode.select("//username")[0].toString(),
-            password: dbNode.select("//password")[0].toString(),
-            dbname: dbNode.select("//dbname")[0].toString(),
+            host: dbNode.get('host').text(),
+            username: dbNode.get('username').text(),
+            password: dbNode.get('password').text(),
+            dbname: dbName,
             table_prefix: tablePrefix,
-            filename: dbNode.select("//host")[0].toString() + "-" + getDate() + ".sql"
+            filename: dbName + "-" + getDate() + ".sql"
         };
 
-        var firstCommand = template(firstTemplate, data);
-        var secondCommand = template(secondTemplate, data);
-        var fullDumpCommand = template(fullDumpTemplate, data);
-        var clientCommand = template(clientTemplate, data);
-
+        this.commands = {
+            firstCommand: template(firstTemplate, data),
+            secondCommand: template(secondTemplate, data),
+            fullDumpCommand: template(fullDumpTemplate, data),
+            clientCommand: template(clientTemplate, data)
+        };
+        return this.commands;
     };
 
-
-    function template(templateFunction, data) {
-        var string = templateFunction();
+    function template(_template, data) {
+        var string = (typeof _template == 'function') ? _template() : _template;
         for (var key in data) {
             if (data.hasOwnProperty(key)) {
                 var re = new RegExp("{{"+key+"}}", "gi");
@@ -227,9 +228,6 @@ function LocalXmlParser() {
         string += day.length == 1 ? "0" + day : day;
         return string;
     }
-
 }
-
-
 
 module.exports = new DatabaseRoute();

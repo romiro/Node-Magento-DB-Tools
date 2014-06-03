@@ -87,7 +87,7 @@ function DatabasePage() {
                 error: function(xhr, status, errorThrown){
                     var response = xhr.responseText;
                     if (status == 'parsererror') {
-                        //TODO: handle displaying parsererror errors
+                        console.err('Error with response from database connection test:', response);
                     }
                 },
                 complete: function(xhr, type) {
