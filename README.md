@@ -47,8 +47,8 @@ To see utilize the .map file in your browser, run this from project root: cd pub
         
 * Running of DB sanitization commands through SSH
     * New page, using elements from data sanitization view ✔
-        * Option: Either full-dump mode or selectively using certain tables
-        * Option: Database table checkboxes for ignore-table params
+        * Option: Either full-dump mode or selectively using certain tables ✔
+        * Option: Database table checkboxes for ignore-table params ✔
         * Option: Download file via scp from server after creation
 
     * Connect to SSH server using site profile

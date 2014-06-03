@@ -1,7 +1,7 @@
 function DatabasePage() {
 
     var siteProfiles, sshConfig;
-    var databaseIo = io.connect('/database');
+//    var databaseIo = io.connect('/database');
 
     var $container = $('#database');
     var $display = $('#database-display');
@@ -18,7 +18,7 @@ function DatabasePage() {
 
     setupEvents();
     setupDefaults();
-    setupSocket();
+//    setupSocket();
 
     /**
      * Sets up events
@@ -80,7 +80,19 @@ function DatabasePage() {
                 url: '/testDatabaseConnection',
                 dataType: 'json',
                 type: 'POST',
-                data: $inputs.serialize()
+                data: $inputs.serialize(),
+                success: function(data) {
+                    console.log('testDatabaseConnection::onsuccess', data);
+                },
+                error: function(xhr, status, errorThrown){
+                    var response = xhr.responseText;
+                    if (status == 'parsererror') {
+                        //TODO: handle displaying parsererror errors
+                    }
+                },
+                complete: function(xhr, type) {
+                    console.log('testDatabaseConnection::oncomplete', type);
+                }
             });
         });
     }

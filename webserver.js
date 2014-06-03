@@ -11,7 +11,7 @@ var config = require('./config');
 
 function WebServer() {
 
-    var webApp = express();
+    var webApp = this.webApp = express();
     var server = http.createServer(webApp);
     var io = socketIo.listen(server);
 
