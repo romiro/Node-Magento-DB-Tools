@@ -76,22 +76,33 @@ function DatabasePage() {
             if (!Tools.validate($inputs, $container)) {
                 return false;
             }
+
+            Tools.showWait();
+
+            var $messages = $('#database-messages');
+            $messages.empty();
+
             $.ajax({
                 url: '/testDatabaseConnection',
                 dataType: 'json',
                 type: 'POST',
                 data: $inputs.serialize(),
                 success: function(data) {
+                    if (data['messages'] && data['messages'].length) {
+                        $.each(data['messages'], function(i, val){
+                            $messages.append($('<li class="list-group-item bg-success"></li>').text(val));
+                        });
+                    }
                     console.log('testDatabaseConnection::onsuccess', data);
                 },
                 error: function(xhr, status, errorThrown){
                     var response = xhr.responseText;
                     if (status == 'parsererror') {
-                        console.err('Error with response from database connection test:', response);
+                        console.error('Error with response from database connection test:', response, errorThrown);
                     }
                 },
-                complete: function(xhr, type) {
-                    console.log('testDatabaseConnection::oncomplete', type);
+                complete: function() {
+                    Tools.hideWait();
                 }
             });
         });

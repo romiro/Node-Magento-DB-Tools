@@ -76,3 +76,27 @@ a.select-all, a.select-none {
         font-size: 80%;
     }
 }
+
+body.wait {
+    cursor: wait!important;
+}
+.list-group-item {
+    &.bg-primary {
+        // Given the contrast here, this is the only class to have its color inverted
+        // automatically.
+        color: #fff;
+        .bg-variant(@brand-primary);
+    }
+    &.bg-success {
+        .bg-variant(@state-success-bg);
+    }
+    &.bg-info {
+        .bg-variant(@state-info-bg);
+    }
+    &.bg-warning {
+        .bg-variant(@state-warning-bg);
+    }
+    &.bg-danger {
+        .bg-variant(@state-danger-bg);
+    }
+}

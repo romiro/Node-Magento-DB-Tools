@@ -21,7 +21,7 @@ DatabaseRoute.prototype.use = function(webApp) {
 
     webApp.post('/testDatabaseConnection', function(req, resp){
         var data = req.body;
-        var returnJson = {};
+        var returnJson = {messages:[]};
         var siteProfile = siteProfiles.get(data['site-profile']);
         var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
 
@@ -42,7 +42,13 @@ DatabaseRoute.prototype.use = function(webApp) {
          * Attempt a connect, pass error in response if no go
          */
         conn.onReady(function(){
-            //Confirm directory defined in siteProfile exists
+            checkSitePath();
+        });
+
+        /**
+         * Confirm directory defined in siteProfile exists
+         */
+        function checkSitePath() {
             var command = util.format('cd %s', siteProfile['sitePath']);
             conn.connection.exec(command, function(err, stream){
                 if (err) {
@@ -52,16 +58,17 @@ DatabaseRoute.prototype.use = function(webApp) {
                 }
                 stream.on('exit', function(exitCode){
                     if (exitCode == 1) {
-                        returnJson['message'] = util.format('Directory %s does not exist on server', siteProfile['sitePath']);
+                        returnJson['messages'].push(util.format('Directory %s does not exist on server', siteProfile['sitePath']));
                         resp.json(returnJson);
                     }
                     else {
+                        returnJson['messages'].push(util.format('Directory %s found on server', siteProfile['sitePath']));
                         //Continue async into below method
                         getLocalXml();
                     }
                 });
             });
-        });
+        }
 
         /**
          * Gets local.xml from production path defined in site profile
@@ -83,23 +90,26 @@ DatabaseRoute.prototype.use = function(webApp) {
 
                 stream.on('exit', function(exitCode){
                     if (exitCode == 1) {
-                        returnJson['message'] = util.format('%s not found on server!', filePath);
+                        returnJson['error'] = util.format('Did not find local.xml at %s on server', filePath);
                         resp.json(returnJson);
                     }
                     else if (exitCode == 0){ //File found, data should have collected into localXml
-                        var parser = new LocalXmlParser();
-                        parser.setIgnoredTables(data.tables);
-                        try {
-                            parser.parse(localXml);
-                        }
-                        catch (e) {
-                            resp.end(e.message);
-                            return;
-                        }
+
+                        //TODO: Use below for actual database dump action
+//                        var parser = new LocalXmlParser();
+//                        parser.setIgnoredTables(data.tables);
+//                        try {
+//                            parser.parse(localXml);
+//                        }
+//                        catch (e) {
+//                            resp.end(e.message);
+//                            return;
+//                        }
+                        returnJson['messages'].push(util.format('Found local.xml at %s', filePath));
                         checkMysqldump();
                     }
                     else {
-                        returnJson['message'] = 'Something weird happened while trying to cat local.xml on server';
+                        returnJson['messages'].push('Something weird happened while trying to cat local.xml on server');
                         resp.json(returnJson);
                     }
                 });
@@ -119,10 +129,10 @@ DatabaseRoute.prototype.use = function(webApp) {
                 }
                 stream.on('exit', function(exitCode){
                     if (exitCode == 127) { //127 = command not found
-                        returnJson['message'] = 'mysqldump command does not exist or is not accessible on server!';
+                        returnJson['error'] = 'mysqldump command does not exist or is not accessible on server!';
                     }
                     else {
-                        returnJson['message'] = 'Production directory found, and mysqldump command exists';
+                        returnJson['messages'].push('mysqldump command exists');
                     }
                     resp.json(returnJson);
                 });
@@ -140,7 +150,6 @@ DatabaseRoute.prototype.use = function(webApp) {
 
     });
 };
-
 
 
 function LocalXmlParser() {

@@ -52,8 +52,14 @@ To see utilize the .map file in your browser, run this from project root: cd pub
         * Option: Download file via scp from server after creation
 
     * Connect to SSH server using site profile
-        * Find local.xml using system path defined in system profile
-        * Extract DB information from &lt;resources> node of local.xml
-        * Use same JS functions as frontend page to create mysqldump commands
+        * Find local.xml using system path defined in system profile ✔
+        * Extract DB information from &lt;resources> node of local.xml ✔
+        * Use same JS functions as frontend page to create mysqldump commands ✔
         * Run mysqldump commands as defined with user request
         * If chosen, run scp command from local SSH to grab file from server into defined download directory
+
+    * Connection Test
+        * Dry run of all of the above steps for the connection and running on mysqldump
+
+* MySQL command generator (existing, currently called "Home")
+    * Add ability to use existing site profile to get the contents of a local.xml
