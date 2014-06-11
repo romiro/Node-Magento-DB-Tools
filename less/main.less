@@ -1,89 +1,16 @@
 @import "bootstrap/bootstrap";
 
-hr {
-    margin: 1em 0;
-}
-
-#command-output input {
-    width: 100%;
-}
-#notice {
-    display: none;
-}
-
-textarea#localxml {
-    height:150px;
-}
-div.button {
-    margin: 1em 0;
-}
-.btn.select-all-text {
-    margin-top: 4px;
-}
-
-.box-group {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 0.5em 2em;
-}
-.box-group-content {
-    display: none;
-}
-
-#tables-toggle {
-    cursor: pointer;
-}
-a.select-all, a.select-none {
-    cursor: pointer;
-}
-
-
-//Site Profiles
-#profile-template {
-    display: none;
-}
-
-#site-profiles {
-    .buttons {
-        .save-button {
-            float: right;
-        }
-        .delete-button {
-            float: left;
-        }
-    }
-    .add-profile {
-        label {
-            color: @panel-success-text;
-        }
-    }
-}
-
-//Database page
-#database {
-    .list-group-item-heading {
-        margin-bottom: 12px;
-    }
-    .list-group-item {
-        padding: 25px 30px;
-    }
-}
-#table-checkboxes-template {
-    display: none;
-}
-#table-checkboxes {
-    label {
-        font-size: 80%;
-    }
-}
-
+//--------------------
+// Generic styles
+//--------------------
 body.wait {
     cursor: wait!important;
 }
+hr {
+    margin: 1em 0;
+}
 .list-group-item {
     &.bg-primary {
-        // Given the contrast here, this is the only class to have its color inverted
-        // automatically.
         color: #fff;
         .bg-variant(@brand-primary);
     }
@@ -100,3 +27,86 @@ body.wait {
         .bg-variant(@state-danger-bg);
     }
 }
+
+
+//--------------------
+// Local XML parser page (home/index)
+//--------------------
+#command-output input {
+    width: 100%;
+}
+#notice {
+    display: none;
+}
+
+textarea#localxml {
+    height:150px;
+}
+div.button {
+    margin: 1em 0;
+}
+.btn.select-all-text {
+    margin-top: 4px;
+}
+.box-group {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5em 2em;
+}
+.box-group-content {
+    display: none;
+}
+#tables-toggle {
+    cursor: pointer;
+}
+a.select-all, a.select-none {
+    cursor: pointer;
+}
+
+//--------------------
+// Site Profiles page
+//--------------------
+#profile-template {
+    display: none;
+}
+#site-profiles {
+    .buttons {
+        .save-button {
+            float: right;
+        }
+        .delete-button {
+            float: left;
+        }
+    }
+    .add-profile {
+        label {
+            color: @panel-success-text;
+        }
+    }
+}
+
+//--------------------
+// Database page
+//--------------------
+#database {
+    .list-group-item-heading {
+        margin-bottom: 12px;
+    }
+    .list-group-item {
+        padding: 25px 30px;
+    }
+}
+#database-messages {
+    .list-group-item {
+        padding: 10px 15px;
+    }
+}
+#table-checkboxes-template {
+    display: none;
+}
+#table-checkboxes {
+    label {
+        font-size: 80%;
+    }
+}
+

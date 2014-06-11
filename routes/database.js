@@ -8,94 +8,104 @@ var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
 var JsonStore = require('../lib/json-store');
 
+var siteProfiles;
 
 function DatabaseRoute() {}
 
 DatabaseRoute.prototype.use = function(webApp) {
-    var siteProfiles = webApp.locals.siteProfiles;
 
+    siteProfiles = webApp.locals.siteProfiles;
     //Auto DB Sanitizer & Downloader
     webApp.get('/database', function(req, resp){
         resp.render('database');
     });
 
     webApp.post('/testDatabaseConnection', function(req, resp){
-        var data = req.body;
-        var returnJson = {messages:[]};
-        var siteProfile = siteProfiles.get(data['site-profile']);
-        var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
+        var controller = new DatabaseConnection(req, resp, 'test');
+    });
 
-        var sshOptions = {
-            host: sshConfig['host'],
-            port: 22,
-            username: sshConfig['user']
-        };
+    webApp.post('/runDatabaseConfiguration', function(req, resp){
+        var controller = new DatabaseConnection(req, resp, 'run');
+    });
+};
 
-        //Determine if password or key, setup object to pass to new SSHConn as appropriate
-        if (data['pass-or-key'] == 'password') {
-            sshOptions['password'] = data['password'];
-        }
+function DatabaseConnection(req, resp, type) {
+    var data = req.body;
+    var returnJson = {messages:[]};
+    var siteProfile = siteProfiles.get(data['site-profile']);
+    var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
 
-        var conn = new SSHConn();
+    var sshOptions = {
+        host: sshConfig['host'],
+        port: 22,
+        username: sshConfig['user']
+    };
 
-        /**
-         * Attempt a connect, pass error in response if no go
-         */
-        conn.onReady(function(){
-            checkSitePath();
-        });
+    //Determine if password or key, setup object to pass to new SSHConn as appropriate
+    if (data['pass-or-key'] == 'password') {
+        sshOptions['password'] = data['password'];
+    }
 
-        /**
-         * Confirm directory defined in siteProfile exists
-         */
-        function checkSitePath() {
-            var command = util.format('cd %s', siteProfile['sitePath']);
-            conn.connection.exec(command, function(err, stream){
-                if (err) {
-                    console.error(err);
-                    returnJson['error'] = err.message;
+    var conn = new SSHConn();
+
+    /**
+     * Attempt a connect, pass error in response if no go
+     */
+    conn.onReady(function(){
+        checkSitePath();
+    });
+
+    /**
+     * Confirm directory defined in siteProfile exists
+     */
+    function checkSitePath() {
+        var command = util.format('cd %s', siteProfile['sitePath']);
+        conn.connection.exec(command, function(err, stream){
+            if (err) {
+                console.error(err);
+                returnJson['error'] = err.message;
+                resp.json(returnJson);
+            }
+            stream.on('exit', function(exitCode){
+                if (exitCode == 1) {
+                    returnJson['messages'].push(util.format('Directory %s does not exist on server', siteProfile['sitePath']));
                     resp.json(returnJson);
                 }
-                stream.on('exit', function(exitCode){
-                    if (exitCode == 1) {
-                        returnJson['messages'].push(util.format('Directory %s does not exist on server', siteProfile['sitePath']));
-                        resp.json(returnJson);
-                    }
-                    else {
-                        returnJson['messages'].push(util.format('Directory %s found on server', siteProfile['sitePath']));
-                        //Continue async into below method
-                        getLocalXml();
-                    }
-                });
+                else {
+                    returnJson['messages'].push(util.format('Directory %s found on server', siteProfile['sitePath']));
+                    //Continue async into below method
+                    getLocalXml();
+                }
             });
-        }
+        });
+    }
 
-        /**
-         * Gets local.xml from production path defined in site profile
-         */
-        function getLocalXml() {
-            var filePath = path.join(path.normalize(siteProfile['sitePath']), 'app', 'etc', 'local.xml');
-            var command = util.format('cat %s', filePath);
-            var localXml = '';
-            conn.connection.exec(command, function(err, stream){
-                if (err) {
-                    console.error(err);
-                    returnJson['error'] = err.message;
+    /**
+     * Gets local.xml from production path defined in site profile
+     */
+    function getLocalXml() {
+        var filePath = path.join(path.normalize(siteProfile['sitePath']), 'app', 'etc', 'local.xml');
+        var command = util.format('cat %s', filePath);
+        var localXml = '';
+        conn.connection.exec(command, function(err, stream){
+            if (err) {
+                console.error(err);
+                returnJson['error'] = err.message;
+                resp.json(returnJson);
+            }
+
+            stream.on('data', function(data){
+                localXml += data;
+            });
+
+            stream.on('exit', function(exitCode){
+                if (exitCode == 1) {
+                    returnJson['error'] = util.format('Did not find local.xml at %s on server', filePath);
                     resp.json(returnJson);
                 }
+                else if (exitCode == 0){ //File found, data should have collected into localXml
 
-                stream.on('data', function(data){
-                    localXml += data;
-                });
-
-                stream.on('exit', function(exitCode){
-                    if (exitCode == 1) {
-                        returnJson['error'] = util.format('Did not find local.xml at %s on server', filePath);
-                        resp.json(returnJson);
-                    }
-                    else if (exitCode == 0){ //File found, data should have collected into localXml
-
-                        //TODO: Use below for actual database dump action
+                    //TODO: Use below for actual database dump action
 //                        var parser = new LocalXmlParser();
 //                        parser.setIgnoredTables(data.tables);
 //                        try {
@@ -105,62 +115,68 @@ DatabaseRoute.prototype.use = function(webApp) {
 //                            resp.end(e.message);
 //                            return;
 //                        }
-                        returnJson['messages'].push(util.format('Found local.xml at %s', filePath));
-                        checkMysqldump();
-                    }
-                    else {
-                        returnJson['messages'].push('Something weird happened while trying to cat local.xml on server');
-                        resp.json(returnJson);
-                    }
-                });
-            });
-
-        }
-
-        /**
-         * Determine that mysqldump command is available
-         */
-        function checkMysqldump() {
-            conn.connection.exec('mysqldump', function(err, stream){
-                if (err) {
-                    console.error(err);
-                    returnJson['error'] = err.message;
+                    returnJson['messages'].push(util.format('Found local.xml at %s', filePath));
+                    checkMysqldump();
+                }
+                else {
+                    returnJson['messages'].push('Something weird happened while trying to cat local.xml on server');
                     resp.json(returnJson);
                 }
-                stream.on('exit', function(exitCode){
-                    if (exitCode == 127) { //127 = command not found
-                        returnJson['error'] = 'mysqldump command does not exist or is not accessible on server!';
-                    }
-                    else {
-                        returnJson['messages'].push('mysqldump command exists');
-                    }
-                    resp.json(returnJson);
-                });
             });
-        }
+        });
 
-        /**
-         * Determine if a mysql connection can be established, and that the database exists
-         */
-        function checkMysqlConnection() {
+    }
 
-        }
+    /**
+     * Determine that mysqldump command is available
+     */
+    function checkMysqldump() {
+        conn.connection.exec('mysqldump', function(err, stream){
+            if (err) {
+                console.error(err);
+                returnJson['error'] = err.message;
+                resp.json(returnJson);
+            }
+            stream.on('exit', function(exitCode){
+                if (exitCode == 127) { //127 = command not found
+                    returnJson['error'] = 'mysqldump command does not exist or is not accessible on server!';
+                }
+                else {
+                    returnJson['messages'].push('mysqldump command exists');
+                }
+                checkMysqlConnection();
+            });
+        });
+    }
 
-        conn.connect(sshOptions);
+    /**
+     * Determine if a mysql connection can be established, and that the database exists
+     */
+    function checkMysqlConnection() {
+        //Create an sshConn
+        //Create an sshTunnel
+        //Create mysql connection (example left in /app.js)
 
-    });
-};
+        //Start tunnel after attaching sshConn to sshTunnel
+        //Verify connect via 'show tables' (?)
+
+
+        resp.json(returnJson);
+    }
+
+    conn.connect(sshOptions);
+}
 
 
 function LocalXmlParser() {
     var host, username, password, dbname, data;
-    var firstTemplate, secondTemplate, fullDumpTemplate, clientTemplate;
+    var firstTemplate, secondTemplate, fullDumpTemplate, testConnTemplate;
     var ignoredTables = [];
 
-    firstTemplate = 'mysqldump -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
+    firstTemplate = 'mysqldump --skip-lock-tables --single-transaction -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
 
     secondTemplate = function(){
-        var string = 'mysqldump -h{{host}} -u{{username}} -p';
+        var string = 'mysqldump --skip-lock-tables --single-transaction -h{{host}} -u{{username}} -p';
 
         _.each(ignoredTables, function(value){
             string += ' --ignore-table={{table_prefix}}{{dbname}}.' + value;
@@ -169,9 +185,9 @@ function LocalXmlParser() {
         return string;
     };
 
-    fullDumpTemplate = 'mysqldump -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
+    fullDumpTemplate = 'mysqldump --skip-lock-tables --single-transaction -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
 
-    clientTemplate = 'mysql -h{{host}} -u{{username}} -p {{dbname}}';
+    testConnTemplate = 'mysql -h{{host}} -u{{username}} -p --execute="SELECT ALL FROM {{table_prefix}}core_config_data WHERE path LIKE \'%url%\';" {{dbname}}';
 
     this.commands = {};
 
@@ -184,12 +200,11 @@ function LocalXmlParser() {
     };
 
     /**
-     * Parse local xml using xpath
+     * Parse local xml using libxmljs and xpath
      *
      * @param localXml
      */
     this.parse = function(localXml) {
-        /* @var xml ElementTree */
         var xmlDoc = libxmljs.parseXml(localXml);
 
         var tablePrefix = xmlDoc.get('//db/table_prefix').text();
@@ -210,8 +225,9 @@ function LocalXmlParser() {
             firstCommand: template(firstTemplate, data),
             secondCommand: template(secondTemplate, data),
             fullDumpCommand: template(fullDumpTemplate, data),
-            clientCommand: template(clientTemplate, data)
+            testConnCommand: template(testConnTemplate, data)
         };
+
         return this.commands;
     };
 
