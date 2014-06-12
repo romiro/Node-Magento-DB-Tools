@@ -7,6 +7,8 @@ node.js web application that assists with database dumping, santization, and mor
 Getting Started
 ---------------
 
+Requires an up-to-date installation of both node and npm (ie, not from default package managers)
+
 After cloning down, run 
     
     npm install

@@ -3,10 +3,13 @@ var path = require('path');
 
 var libxmljs = require("libxmljs");
 var _ = require('underscore');
+var mysql = require('mysql');
 
 var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
+var SSHTunnel = require('../lib/ssh-tunnel');
 var JsonStore = require('../lib/json-store');
+var config = require('../config');
 
 var siteProfiles;
 
@@ -34,6 +37,7 @@ function DatabaseConnection(req, resp, type) {
     var returnJson = {messages:[]};
     var siteProfile = siteProfiles.get(data['site-profile']);
     var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
+    var dbData;
 
     var sshOptions = {
         host: sshConfig['host'],
@@ -54,6 +58,8 @@ function DatabaseConnection(req, resp, type) {
     conn.onReady(function(){
         checkSitePath();
     });
+
+    conn.connect(sshOptions);
 
     /**
      * Confirm directory defined in siteProfile exists
@@ -105,17 +111,17 @@ function DatabaseConnection(req, resp, type) {
                 }
                 else if (exitCode == 0){ //File found, data should have collected into localXml
 
-                    //TODO: Use below for actual database dump action
-//                        var parser = new LocalXmlParser();
-//                        parser.setIgnoredTables(data.tables);
-//                        try {
-//                            parser.parse(localXml);
-//                        }
-//                        catch (e) {
-//                            resp.end(e.message);
-//                            return;
-//                        }
+                    var parser = new LocalXmlParser();
+                    parser.setIgnoredTables(data.tables);
+                    try {
+                        parser.parse(localXml);
+                    }
+                    catch (e) {
+                        resp.end(e.message);
+                        return;
+                    }
                     returnJson['messages'].push(util.format('Found local.xml at %s', filePath));
+                    dbData = parser.data;
                     checkMysqldump();
                 }
                 else {
@@ -153,18 +159,32 @@ function DatabaseConnection(req, resp, type) {
      * Determine if a mysql connection can be established, and that the database exists
      */
     function checkMysqlConnection() {
-        //Create an sshConn
-        //Create an sshTunnel
-        //Create mysql connection (example left in /app.js)
+        var tunnel = new SSHTunnel();
+        tunnel.newConnection(sshOptions);
+        tunnel.startTunnel(dbData.host, 3306, function(){
+            var myConn = mysql.createConnection({
+                host: '127.0.0.1',
+                port: config.tunnel.port,
+                user: dbData.username,
+                password: dbData.password,
+                database: dbData.dbname
+            });
 
-        //Start tunnel after attaching sshConn to sshTunnel
-        //Verify connect via 'show tables' (?)
-
-
-        resp.json(returnJson);
+            myConn.connect(function(){
+                myConn.query('SHOW TABLES', function(err, rows, fields) {
+                    if (err) {
+                        returnJson.error = err.message;
+                        resp.json(returnJson);
+                    }
+                    else {
+                        returnJson.messages.push('MySQL credentials are correct');
+                        returnJson.messages.push('MySQL tunnel connection established successfully!');
+                        resp.json(returnJson);
+                    }
+                });
+            });
+        });
     }
-
-    conn.connect(sshOptions);
 }
 
 
@@ -212,7 +232,7 @@ function LocalXmlParser() {
         var dbNode = xmlDoc.get('//resources/default_setup/connection');
         var dbName = dbNode.get('//dbname').text();
 
-        data = {
+        this.data = data = {
             host: dbNode.get('host').text(),
             username: dbNode.get('username').text(),
             password: dbNode.get('password').text(),
@@ -228,7 +248,7 @@ function LocalXmlParser() {
             testConnCommand: template(testConnTemplate, data)
         };
 
-        return this.commands;
+        return {data: this.data, commands: this.commands};
     };
 
     function template(_template, data) {

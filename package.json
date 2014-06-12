@@ -6,7 +6,7 @@
     "ejs-locals": "~1.0.2",
     "express": "~3.4.8",
     "libxmljs": "^0.10.0",
-    "mysql": "~2.1.0",
+    "mysql": "~2.3.2",
     "socket.io": "~0.9.16",
     "ssh2": "~0.2.17",
     "underscore": "^1.6.0",
