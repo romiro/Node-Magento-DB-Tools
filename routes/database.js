@@ -179,6 +179,9 @@ function DatabaseConnection(req, resp, type) {
                     else {
                         returnJson.messages.push('MySQL credentials are correct');
                         returnJson.messages.push('MySQL tunnel connection established successfully!');
+                        myConn.end(function(){
+                            tunnel.closeTunnel();
+                        });
                         resp.json(returnJson);
                     }
                 });
