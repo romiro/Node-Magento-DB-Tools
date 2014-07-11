@@ -1,14 +1,13 @@
 var util = require('util');
 var path = require('path');
 
-var libxmljs = require("libxmljs");
+var libxmljs = require('libxmljs');
 var _ = require('underscore');
 var mysql = require('mysql');
 
 var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
 var SSHTunnel = require('../lib/ssh-tunnel');
-var JsonStore = require('../lib/json-store');
 var config = require('../config');
 
 var siteProfiles;
@@ -30,6 +29,10 @@ DatabaseRoute.prototype.use = function(webApp) {
     webApp.post('/runDatabaseConfiguration', function(req, resp){
         var controller = new DatabaseConnection(req, resp, 'run');
     });
+
+    webApp.post('/testMysqlDump', function(req, resp){
+        var controller = new DatabaseConnection(req, resp, 'testdump');
+    });
 };
 
 function DatabaseConnection(req, resp, type) {
@@ -37,7 +40,7 @@ function DatabaseConnection(req, resp, type) {
     var returnJson = {messages:[]};
     var siteProfile = siteProfiles.get(data['site-profile']);
     var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
-    var dbData;
+    var dbData, dbCommands;
 
     var sshOptions = {
         host: sshConfig['host'],
@@ -52,12 +55,50 @@ function DatabaseConnection(req, resp, type) {
 
     var conn = new SSHConn();
 
+    switch (type) {
+        case "testdump":
+            sshOptions['tryKeyboard'] = true;
+            conn.connection.on('keyboard-interactive', function(name, instructions, instructionsLang, prompts, finish){
+                console.log(name);
+            });
+            conn.onReady(function(){
+                testMysqlDump();
+            });
+
+            break;
+        default:
+            conn.onReady(function(){
+                checkSitePath();
+            });
+            break;
+    }
+
+    function testMysqlDump() {
+        getLocalXml(function(){
+
+            var command = dbCommands.firstCommand;
+            conn.connection.exec(command, {pty: true}, function(err, stream){
+                if (err) {
+                    console.log(err);
+                }
+                stream.on('data', function(data){
+                    var string = ''+data;
+                    if (string == 'Enter password: ') {
+                        stream.write(dbData.password + "\n");
+                    }
+                    console.log(string);
+                });
+                stream.on('exit', function(exitCode){
+                    console.log(exitCode);
+                });
+            });
+        });
+
+    }
+
     /**
      * Attempt a connect, pass error in response if no go
      */
-    conn.onReady(function(){
-        checkSitePath();
-    });
 
     conn.connect(sshOptions);
 
@@ -89,7 +130,7 @@ function DatabaseConnection(req, resp, type) {
     /**
      * Gets local.xml from production path defined in site profile
      */
-    function getLocalXml() {
+    function getLocalXml(callback) {
         var filePath = path.join(path.normalize(siteProfile['sitePath']), 'app', 'etc', 'local.xml');
         var command = util.format('cat %s', filePath);
         var localXml = '';
@@ -121,8 +162,14 @@ function DatabaseConnection(req, resp, type) {
                         return;
                     }
                     returnJson['messages'].push(util.format('Found local.xml at %s', filePath));
+                    dbCommands = parser.commands;
                     dbData = parser.data;
-                    checkMysqldump();
+                    if (!callback) {
+                        checkMysqldump();
+                    }
+                    else {
+                        callback();
+                    }
                 }
                 else {
                     returnJson['messages'].push('Something weird happened while trying to cat local.xml on server');
@@ -193,7 +240,7 @@ function DatabaseConnection(req, resp, type) {
 
 function LocalXmlParser() {
     var host, username, password, dbname, data;
-    var firstTemplate, secondTemplate, fullDumpTemplate, testConnTemplate;
+    var firstTemplate, secondTemplate, fullDumpTemplate;
     var ignoredTables = [];
 
     firstTemplate = 'mysqldump --skip-lock-tables --single-transaction -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
@@ -204,13 +251,11 @@ function LocalXmlParser() {
         _.each(ignoredTables, function(value){
             string += ' --ignore-table={{table_prefix}}{{dbname}}.' + value;
         });
-        string += " {{dbname}} >> {{filename}}";
+        string += " {{dbname}} >> {{filename}} && gzip {{filename}}";
         return string;
     };
 
     fullDumpTemplate = 'mysqldump --skip-lock-tables --single-transaction -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
-
-    testConnTemplate = 'mysql -h{{host}} -u{{username}} -p --execute="SELECT ALL FROM {{table_prefix}}core_config_data WHERE path LIKE \'%url%\';" {{dbname}}';
 
     this.commands = {};
 
@@ -247,8 +292,7 @@ function LocalXmlParser() {
         this.commands = {
             firstCommand: template(firstTemplate, data),
             secondCommand: template(secondTemplate, data),
-            fullDumpCommand: template(fullDumpTemplate, data),
-            testConnCommand: template(testConnTemplate, data)
+            fullDumpCommand: template(fullDumpTemplate, data)
         };
 
         return {data: this.data, commands: this.commands};

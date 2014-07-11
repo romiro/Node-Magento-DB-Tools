@@ -71,10 +71,18 @@ function DatabasePage() {
         });
 
         //Action buttons
-        $('#test-connection').on('click', function(event){
+        $('#test-connection, #testMysqlDump').on('click', function(event){
             var $inputs = $('#database-form').find(':input').not(':button');
             if (!Tools.validate($inputs, $container)) {
                 return false;
+            }
+
+            var url;
+            if ($(this).is('#testMysqlDump')) {
+                url = '/testMysqlDump';
+            }
+            else {
+                url = '/testDatabaseConnection';
             }
 
             Tools.showWait();
@@ -83,7 +91,7 @@ function DatabasePage() {
             $messages.empty();
 
             $.ajax({
-                url: '/testDatabaseConnection',
+                url: url,
                 dataType: 'json',
                 type: 'POST',
                 data: $inputs.serialize(),
