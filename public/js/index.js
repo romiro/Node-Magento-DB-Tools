@@ -3,20 +3,20 @@ jQuery(function(){
     var host, username, password, dbname, data;
 
     var firstTemplate = function() {
-        return 'mysqldump -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
+        return 'mysqldump --skip-lock-tables --single-transaction -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
     };
 
     var secondTemplate = function(){
-        var string = 'mysqldump -h{{host}} -u{{username}} -p';
+        var string = 'mysqldump --skip-lock-tables --single-transaction -h{{host}} -u{{username}} -p';
         $('#table-checkboxes').find('input[type=checkbox]:checked').each(function(){
             string += ' --ignore-table={{table_prefix}}{{dbname}}.' + $(this).val();
         });
-        string += " {{dbname}} >> {{filename}}";
+        string += " {{dbname}} >> {{filename}} && gzip {{filename}}";
         return string;
     };
 
     var fullDumpTemplate = function() {
-        return 'mysqldump -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
+        return 'mysqldump --skip-lock-tables --single-transaction -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
     };
 
     var clientTemplate = function(){

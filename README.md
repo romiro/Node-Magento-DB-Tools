@@ -63,5 +63,8 @@ To see utilize the .map file in your browser, run this from project root: cd pub
     * Connection Test
         * Dry run of all of the above steps for the connection and running on mysqldump
 
+    * Fixes / Changes
+        * Store information gathered from SSH config file directly into the site profile to make data more portable
+
 * MySQL command generator (existing, currently called "Home")
     * Add ability to use existing site profile to get the contents of a local.xml

@@ -50,14 +50,28 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.post('/saveSiteProfile', function(req, resp){
+        var sshEntry = SSHConfig.getHostByName(req.body['ssh-config-name']);
         var key = req.body['key'] ? req.body['key'] : null;
         var data = {
             profileName: req.body['profile-name'],
             sitePath: req.body['site-path'],
-            sshConfigName: req.body['ssh-config-name']
+            sshConfigName: req.body['ssh-config-name'],
+            sshHost: sshEntry['host'],
+            sshUser: sshEntry['user']
         };
         siteProfiles.set(key, data);
         siteProfiles.save();
+        resp.end();
+    });
+
+    webApp.post('/deleteSiteProfile', function(req, resp){
+        var key = req.body['key'];
+        try {
+            siteProfiles.remove(key);
+        }
+        catch (e) {
+            resp.end(e);
+        }
         resp.end();
     });
 

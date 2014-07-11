@@ -49,16 +49,17 @@ function SiteProfiles() {
 
         //Delete button
         $container.on('click', '.delete-button', function(event){
-            //TODO:FINISH
             var $inputContainer = $(event.target).parents('.panel-primary');
-            var $inputs = $inputContainer.find(':input').not(':button');
-            if (!Tools.validate($inputs, $container)) {
+            var name = $inputContainer.find(':input[name=profile-name]').val();
+            if (!window.confirm('Do you wish to delete the profile "' + name + '"?')) {
                 return false;
             }
+            var key = $inputContainer.find(':input[name=key]').val();
+
             $.ajax({
-                url: '/saveSiteProfile',
+                url: '/deleteSiteProfile',
                 type: 'POST',
-                data: $inputs.serialize(),
+                data: {key: key},
                 success: function() {
                     document.location = document.location;
                 }
