@@ -1,13 +1,12 @@
 var util = require('util');
 var path = require('path');
 
-var libxmljs = require('libxmljs');
-var _ = require('underscore');
 var mysql = require('mysql');
 
 var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
 var SSHTunnel = require('../lib/ssh-tunnel');
+var LocalXmlParser = require('../lib/localxml-parser');
 var config = require('../config');
 
 var siteProfiles;
@@ -57,10 +56,6 @@ function DatabaseConnection(req, resp, type) {
 
     switch (type) {
         case "testdump":
-            sshOptions['tryKeyboard'] = true;
-            conn.connection.on('keyboard-interactive', function(name, instructions, instructionsLang, prompts, finish){
-                console.log(name);
-            });
             conn.onReady(function(){
                 testMysqlDump();
             });
@@ -75,25 +70,58 @@ function DatabaseConnection(req, resp, type) {
 
     function testMysqlDump() {
         getLocalXml(function(){
+            firstCommand();
+        });
 
+        function firstCommand() {
             var command = dbCommands.firstCommand;
             conn.connection.exec(command, {pty: true}, function(err, stream){
                 if (err) {
                     console.log(err);
                 }
-                stream.on('data', function(data){
-                    var string = ''+data;
-                    if (string == 'Enter password: ') {
-                        stream.write(dbData.password + "\n");
-                    }
-                    console.log(string);
-                });
+                enterPassword(stream);
+
                 stream.on('exit', function(exitCode){
-                    console.log(exitCode);
+                    console.log('Finished first mysqldump command, executing next...');
+                    secondCommand();
                 });
             });
-        });
+        }
 
+        function secondCommand() {
+            var command = dbCommands.secondCommand;
+            conn.connection.exec(command, {pty: true}, function(err, stream){
+                if (err) {
+                    console.log(err);
+                }
+                enterPassword(stream);
+
+                stream.on('exit', function(exitCode){
+                    console.log('Finished second mysqldump command, file should be created.');
+                    //TODO: Verify file's existence
+                    conn.end();
+                    returnJson['messages'].push(util.format('Directory %s does not exist on server', siteProfile['sitePath']));
+                    resp.json(returnJson);
+                });
+            });
+        }
+
+        function enterPassword(stream) {
+            stream.once('data', function(data){
+                var string = ''+data;
+                console.log("First data back from mysqldump: " + string);
+                if (string == 'Enter password: ') {
+                    stream.write(dbData.password + "\n");
+                }
+                else {
+                    throw new Error('Error with password prompt on remote mysqldump command');
+                }
+            });
+        }
+
+        function checkFileExists() {
+
+        }
     }
 
     /**
@@ -131,6 +159,7 @@ function DatabaseConnection(req, resp, type) {
      * Gets local.xml from production path defined in site profile
      */
     function getLocalXml(callback) {
+
         var filePath = path.join(path.normalize(siteProfile['sitePath']), 'app', 'etc', 'local.xml');
         var command = util.format('cat %s', filePath);
         var localXml = '';
@@ -234,91 +263,6 @@ function DatabaseConnection(req, resp, type) {
                 });
             });
         });
-    }
-}
-
-
-function LocalXmlParser() {
-    var host, username, password, dbname, data;
-    var firstTemplate, secondTemplate, fullDumpTemplate;
-    var ignoredTables = [];
-
-    firstTemplate = 'mysqldump --skip-lock-tables --single-transaction -d -h{{host}} -u{{username}} -p {{dbname}} > {{filename}}';
-
-    secondTemplate = function(){
-        var string = 'mysqldump --skip-lock-tables --single-transaction -h{{host}} -u{{username}} -p';
-
-        _.each(ignoredTables, function(value){
-            string += ' --ignore-table={{table_prefix}}{{dbname}}.' + value;
-        });
-        string += " {{dbname}} >> {{filename}} && gzip {{filename}}";
-        return string;
-    };
-
-    fullDumpTemplate = 'mysqldump --skip-lock-tables --single-transaction -h{{host}} -u{{username}} -p {{dbname}} | gzip -c | cat > {{filename}}.gz';
-
-    this.commands = {};
-
-    /**
-     * Sets private var for ignored tables
-     * @param tables
-     */
-    this.setIgnoredTables = function(tables) {
-        ignoredTables = tables;
-    };
-
-    /**
-     * Parse local xml using libxmljs and xpath
-     *
-     * @param localXml
-     */
-    this.parse = function(localXml) {
-        var xmlDoc = libxmljs.parseXml(localXml);
-
-        var tablePrefix = xmlDoc.get('//db/table_prefix').text();
-
-        var dbNode = xmlDoc.get('//resources/default_setup/connection');
-        var dbName = dbNode.get('//dbname').text();
-
-        this.data = data = {
-            host: dbNode.get('host').text(),
-            username: dbNode.get('username').text(),
-            password: dbNode.get('password').text(),
-            dbname: dbName,
-            table_prefix: tablePrefix,
-            filename: dbName + "-" + getDate() + ".sql"
-        };
-
-        this.commands = {
-            firstCommand: template(firstTemplate, data),
-            secondCommand: template(secondTemplate, data),
-            fullDumpCommand: template(fullDumpTemplate, data)
-        };
-
-        return {data: this.data, commands: this.commands};
-    };
-
-    function template(_template, data) {
-        var string = (typeof _template == 'function') ? _template() : _template;
-        for (var key in data) {
-            if (data.hasOwnProperty(key)) {
-                var re = new RegExp("{{"+key+"}}", "gi");
-                string = string.replace(re, data[key]);
-            }
-        }
-        return string;
-    }
-
-    function getDate() {
-        var date = new Date();
-        var month = (date.getMonth() + 1).toPrecision();
-        var day = date.getDate().toPrecision();
-        var string = '';
-
-        string += date.getFullYear();
-        string += month.length == 1 ? "0" + month : month;
-        string += day.length == 1 ? "0" + day : day;
-        return string;
     }
 }
 
