@@ -22,15 +22,15 @@ DatabaseRoute.prototype.use = function(webApp) {
     });
 
     webApp.post('/testDatabaseConnection', function(req, resp){
-        var controller = new DatabaseConnection(req, resp, 'test');
+        new DatabaseConnection(req, resp, 'test');
     });
 
     webApp.post('/runDatabaseConfiguration', function(req, resp){
-        var controller = new DatabaseConnection(req, resp, 'run');
+        new DatabaseConnection(req, resp, 'run');
     });
 
     webApp.post('/testMysqlDump', function(req, resp){
-        var controller = new DatabaseConnection(req, resp, 'testdump');
+        new DatabaseConnection(req, resp, 'testdump');
     });
 };
 
@@ -54,18 +54,23 @@ function DatabaseConnection(req, resp, type) {
 
     var conn = new SSHConn();
 
-    switch (type) {
-        case "testdump":
-            conn.onReady(function(){
-                testMysqlDump();
-            });
-
-            break;
-        default:
-            conn.onReady(function(){
-                checkSitePath();
-            });
-            break;
+    try {
+        switch (type) {
+            case "testdump":
+                conn.onReady(function(){
+                    testMysqlDump();
+                });
+                break;
+            default:
+                conn.onReady(function(){
+                    checkSitePath();
+                });
+                break;
+        }
+    }
+    catch (e) {
+        logMessage(util.format('Error thrown: %s', e));
+        resp.json(returnJson);
     }
 
     function testMysqlDump() {
@@ -76,32 +81,76 @@ function DatabaseConnection(req, resp, type) {
         function firstCommand() {
             var command = dbCommands.firstCommand;
             conn.connection.exec(command, {pty: true}, function(err, stream){
-                if (err) {
-                    console.log(err);
-                }
-                enterPassword(stream);
+                if (err) throw err;
 
                 stream.on('exit', function(exitCode){
-                    console.log('Finished first mysqldump command, executing next...');
+                    logMessage('Finished first mysqldump command, executing next...');
                     secondCommand();
                 });
+
+                enterPassword(stream);
             });
         }
 
         function secondCommand() {
             var command = dbCommands.secondCommand;
             conn.connection.exec(command, {pty: true}, function(err, stream){
-                if (err) {
-                    console.log(err);
-                }
-                enterPassword(stream);
+                if (err) throw err;
 
                 stream.on('exit', function(exitCode){
-                    console.log('Finished second mysqldump command, file should be created.');
-                    //TODO: Verify file's existence
+                    if (exitCode == 0) {
+                        logMessage('Finished second mysqldump command, file should be created.');
+                        checkFileExists();
+                    }
+                    else {
+                        logMessage('mysqldump command did not exit successfully');
+                        resp.json(returnJson);
+                        conn.end();
+                    }
+                });
+
+                enterPassword(stream);
+            });
+        }
+
+        function checkFileExists() {
+            var command = util.format('find ~/%s -type f', dbData.filename);
+            conn.connection.exec(command, function(err, stream){
+                if (err) throw err;
+                var returnString;
+                stream.once('data', function(data){
+                    returnString = ''+data;
+                    console.log('checkFileExists::onData: ' +returnString);
+                });
+                stream.on('exit', function(exitCode){
+                    if (exitCode == 0) {
+                        logMessage(util.format('Dump file found at: %s', returnString));
+                        compressFile();
+                    }
+                    else {
+                        logMessage(util.format('Dump file not found: %s', returnString));
+                        resp.json(returnJson);
+                        conn.end();
+                    }
+                });
+            });
+        }
+
+        function compressFile() {
+            var command = util.format('gzip ~/%s', dbData.filename);
+            var outFilename = util.format('%s.gz', dbData.filename);
+            conn.connection.exec(command, function(err, stream){
+                if (err) throw err;
+                stream.on('exit', function(exitCode){
+                    if (exitCode == 0) {
+                        logMessage('File compressed successfully');
+                        resp.json(returnJson);
+                    }
+                    else {
+                        logMessage('gzip returned an error while compressing dump file');
+                        resp.json(returnJson);
+                    }
                     conn.end();
-                    returnJson['messages'].push(util.format('Directory %s does not exist on server', siteProfile['sitePath']));
-                    resp.json(returnJson);
                 });
             });
         }
@@ -118,15 +167,7 @@ function DatabaseConnection(req, resp, type) {
                 }
             });
         }
-
-        function checkFileExists() {
-
-        }
     }
-
-    /**
-     * Attempt a connect, pass error in response if no go
-     */
 
     conn.connect(sshOptions);
 
@@ -136,11 +177,7 @@ function DatabaseConnection(req, resp, type) {
     function checkSitePath() {
         var command = util.format('cd %s', siteProfile['sitePath']);
         conn.connection.exec(command, function(err, stream){
-            if (err) {
-                console.error(err);
-                returnJson['error'] = err.message;
-                resp.json(returnJson);
-            }
+            if (err) throw err;
             stream.on('exit', function(exitCode){
                 if (exitCode == 1) {
                     returnJson['messages'].push(util.format('Directory %s does not exist on server', siteProfile['sitePath']));
@@ -164,11 +201,7 @@ function DatabaseConnection(req, resp, type) {
         var command = util.format('cat %s', filePath);
         var localXml = '';
         conn.connection.exec(command, function(err, stream){
-            if (err) {
-                console.error(err);
-                returnJson['error'] = err.message;
-                resp.json(returnJson);
-            }
+            if (err) throw err;
 
             stream.on('data', function(data){
                 localXml += data;
@@ -181,7 +214,7 @@ function DatabaseConnection(req, resp, type) {
                 }
                 else if (exitCode == 0){ //File found, data should have collected into localXml
 
-                    var parser = new LocalXmlParser();
+                    var parser = new LocalXmlParser({dumpDirectory: '~/'});
                     parser.setIgnoredTables(data.tables);
                     try {
                         parser.parse(localXml);
@@ -206,7 +239,6 @@ function DatabaseConnection(req, resp, type) {
                 }
             });
         });
-
     }
 
     /**
@@ -214,11 +246,7 @@ function DatabaseConnection(req, resp, type) {
      */
     function checkMysqldump() {
         conn.connection.exec('mysqldump', function(err, stream){
-            if (err) {
-                console.error(err);
-                returnJson['error'] = err.message;
-                resp.json(returnJson);
-            }
+            if (err) throw err;
             stream.on('exit', function(exitCode){
                 if (exitCode == 127) { //127 = command not found
                     returnJson['error'] = 'mysqldump command does not exist or is not accessible on server!';
@@ -263,6 +291,11 @@ function DatabaseConnection(req, resp, type) {
                 });
             });
         });
+    }
+
+    function logMessage(message) {
+        returnJson.messages.push(message);
+        console.log(message);
     }
 }
 
