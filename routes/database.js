@@ -104,14 +104,15 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
 
     var conn = this.conn = new SSHConn();
 
-    try {
-        conn.onReady(function(){
+
+    conn.onReady(function(){
+        try {
             checkSitePath();
-        });
-    }
-    catch (e) {
-        self.emit('error', e);
-    }
+        }
+        catch (e) {
+            self.emit('error', e);
+        }
+    });
 
     conn.connect(sshOptions);
 
@@ -313,7 +314,34 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
         }
 
         function downloadFile() {
-            self.emit('finish');
+
+            self.on('fileSize', function(size){
+                console.log('File size', size);
+                self.emit('finish');
+            });
+
+            getFileSize();
+
+            function getFileSize() {
+                var command = util.format('stat -c%%s "%s"', dbData.filename + ".gz");
+                conn.connection.exec(command, function(err, stream){
+                    if (err) throw err;
+                    var returnString = '';
+                    stream.on('data', function(data){
+                        returnString += data;
+                    });
+                    stream.on('exit', function(exitCode){
+                        if (exitCode == 0) {
+                            returnString = returnString.replace(/[^\d]/, '');
+                            self.emit('fileSize', returnString);
+                        }
+                        else {
+                            throw new Error('Problem with stat command while trying to get file size');
+                        }
+                    });
+                });
+            }
+
         }
 
         function enterPassword(stream) {
