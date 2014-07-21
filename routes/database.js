@@ -1,4 +1,5 @@
 var util = require('util');
+var events = require("events");
 var path = require('path');
 
 var mysql = require('mysql');
@@ -15,6 +16,10 @@ function DatabaseRoute() {}
 
 DatabaseRoute.prototype.use = function(webApp) {
 
+    var options = {
+        downloadPath: config.general.downloadPath
+    };
+
     siteProfiles = webApp.locals.siteProfiles;
     //Auto DB Sanitizer & Downloader
     webApp.get('/database', function(req, resp){
@@ -22,24 +27,55 @@ DatabaseRoute.prototype.use = function(webApp) {
     });
 
     webApp.post('/testDatabaseConnection', function(req, resp){
-        new DatabaseConnection(req, resp, 'test');
+        options['type'] = 'test';
+        var db = new DatabaseConnection();
+        db.start(req, resp, options);
     });
 
     webApp.post('/runDatabaseConfiguration', function(req, resp){
-        new DatabaseConnection(req, resp, 'run');
+        options['type'] = 'run';
+        var db = new DatabaseConnection();
+        db.start(req, resp, options);
     });
 
     webApp.post('/testMysqlDump', function(req, resp){
-        new DatabaseConnection(req, resp, 'testdump');
+
+        options['type'] = 'testdump';
+        var db = new DatabaseConnection();
+
+        db.on('error', function(error){
+            returnJson['error'] = error;
+            resp.json(returnJson);
+        });
+
+        var returnJson = {messages:[]};
+        db.on('message', function(message){
+            returnJson.messages.push(message);
+        });
+
+        db.start(req, resp, options);
     });
 };
 
-function DatabaseConnection(req, resp, type) {
-    var data = req.body;
-    var returnJson = {messages:[]};
+
+//TODO: Refactor out the reliance on the web app, use events to send messages and errors
+function DatabaseConnection() {}
+
+util.inherits(DatabaseConnection, events.EventEmitter);
+
+DatabaseConnection.prototype.start = function(req, resp, options) {
+    events.EventEmitter.call(this);
+    var self = this;
+    var data = req.body; //TODO: Refactor into a set of options sent to var options
+    var returnJson = {messages:[]}; //TODO: refactor message delivery into emitted event
     var siteProfile = siteProfiles.get(data['site-profile']);
     var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
-    var dbData, dbCommands;
+
+    var dbData, dbCommands, type;
+
+    if (options) {
+        type = options.type;
+    }
 
     var sshOptions = {
         host: sshConfig['host'],
@@ -71,102 +107,6 @@ function DatabaseConnection(req, resp, type) {
     catch (e) {
         logMessage(util.format('Error thrown: %s', e));
         resp.json(returnJson);
-    }
-
-    function testMysqlDump() {
-        getLocalXml(function(){
-            firstCommand();
-        });
-
-        function firstCommand() {
-            var command = dbCommands.firstCommand;
-            conn.connection.exec(command, {pty: true}, function(err, stream){
-                if (err) throw err;
-
-                stream.on('exit', function(exitCode){
-                    logMessage('Finished first mysqldump command, executing next...');
-                    secondCommand();
-                });
-
-                enterPassword(stream);
-            });
-        }
-
-        function secondCommand() {
-            var command = dbCommands.secondCommand;
-            conn.connection.exec(command, {pty: true}, function(err, stream){
-                if (err) throw err;
-
-                stream.on('exit', function(exitCode){
-                    if (exitCode == 0) {
-                        logMessage('Finished second mysqldump command, file should be created.');
-                        checkFileExists();
-                    }
-                    else {
-                        logMessage('mysqldump command did not exit successfully');
-                        resp.json(returnJson);
-                        conn.end();
-                    }
-                });
-
-                enterPassword(stream);
-            });
-        }
-
-        function checkFileExists() {
-            var command = util.format('find ~/%s -type f', dbData.filename);
-            conn.connection.exec(command, function(err, stream){
-                if (err) throw err;
-                var returnString;
-                stream.once('data', function(data){
-                    returnString = ''+data;
-                    console.log('checkFileExists::onData: ' +returnString);
-                });
-                stream.on('exit', function(exitCode){
-                    if (exitCode == 0) {
-                        logMessage(util.format('Dump file found at: %s', returnString));
-                        compressFile();
-                    }
-                    else {
-                        logMessage(util.format('Dump file not found: %s', returnString));
-                        resp.json(returnJson);
-                        conn.end();
-                    }
-                });
-            });
-        }
-
-        function compressFile() {
-            var command = util.format('gzip ~/%s', dbData.filename);
-            var outFilename = util.format('%s.gz', dbData.filename);
-            conn.connection.exec(command, function(err, stream){
-                if (err) throw err;
-                stream.on('exit', function(exitCode){
-                    if (exitCode == 0) {
-                        logMessage('File compressed successfully');
-                        resp.json(returnJson);
-                    }
-                    else {
-                        logMessage('gzip returned an error while compressing dump file');
-                        resp.json(returnJson);
-                    }
-                    conn.end();
-                });
-            });
-        }
-
-        function enterPassword(stream) {
-            stream.once('data', function(data){
-                var string = ''+data;
-                console.log("First data back from mysqldump: " + string);
-                if (string == 'Enter password: ') {
-                    stream.write(dbData.password + "\n");
-                }
-                else {
-                    throw new Error('Error with password prompt on remote mysqldump command');
-                }
-            });
-        }
     }
 
     conn.connect(sshOptions);
@@ -286,11 +226,110 @@ function DatabaseConnection(req, resp, type) {
                         myConn.end(function(){
                             tunnel.closeTunnel();
                         });
-                        resp.json(returnJson);
+                        runMysqlDump();
                     }
                 });
             });
         });
+    }
+
+    function runMysqlDump() {
+        //Run "frist command" as defined in local xml parser
+        firstCommand();
+
+        function firstCommand() {
+            var command = dbCommands.firstCommand;
+            conn.connection.exec(command, {pty: true}, function(err, stream){
+                if (err) throw err;
+
+                stream.on('exit', function(exitCode){
+                    logMessage('Finished first mysqldump command, executing next...');
+                    secondCommand();
+                });
+
+                enterPassword(stream);
+            });
+        }
+
+        function secondCommand() {
+            var command = dbCommands.secondCommand;
+            conn.connection.exec(command, {pty: true}, function(err, stream){
+                if (err) throw err;
+
+                stream.on('exit', function(exitCode){
+                    if (exitCode == 0) {
+                        logMessage('Finished second mysqldump command, file should be created.');
+                        checkFileExists();
+                    }
+                    else {
+                        logMessage('mysqldump command did not exit successfully');
+                        resp.json(returnJson);
+                        conn.end();
+                    }
+                });
+
+                enterPassword(stream);
+            });
+        }
+
+        function checkFileExists() {
+            var command = util.format('find ~/%s -type f', dbData.filename);
+            conn.connection.exec(command, function(err, stream){
+                if (err) throw err;
+                var returnString;
+                stream.once('data', function(data){
+                    returnString = ''+data;
+                    console.log('checkFileExists::onData: ' +returnString);
+                });
+                stream.on('exit', function(exitCode){
+                    if (exitCode == 0) {
+                        logMessage(util.format('Dump file found at: %s', returnString));
+                        compressFile();
+                    }
+                    else {
+                        logMessage(util.format('Dump file not found: %s', returnString));
+                        resp.json(returnJson);
+                        conn.end();
+                    }
+                });
+            });
+        }
+
+        function compressFile() {
+            var command = util.format('gzip ~/%s', dbData.filename);
+            var outFilename = util.format('%s.gz', dbData.filename);
+            conn.connection.exec(command, function(err, stream){
+                if (err) throw err;
+                stream.on('exit', function(exitCode){
+                    if (exitCode == 0) {
+                        logMessage('File compressed successfully');
+                        resp.json(returnJson);
+                    }
+                    else {
+                        logMessage('gzip returned an error while compressing dump file');
+                        resp.json(returnJson);
+                    }
+                    conn.end();
+                });
+            });
+        }
+
+        function downloadFile() {
+
+        }
+
+        function enterPassword(stream) {
+            stream.once('data', function(data){
+                var string = ''+data;
+                console.log("First data back from mysqldump: " + string);
+                if (string == 'Enter password: ') {
+                    stream.write(dbData.password + "\n");
+                }
+                else {
+                    throw new Error('Error with password prompt on remote mysqldump command');
+                }
+            });
+        }
     }
 
     function logMessage(message) {
@@ -298,5 +337,6 @@ function DatabaseConnection(req, resp, type) {
         console.log(message);
     }
 }
+
 
 module.exports = new DatabaseRoute();
