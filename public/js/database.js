@@ -101,6 +101,9 @@ function DatabasePage() {
                             $messages.append($('<li class="list-group-item bg-success"></li>').text(val));
                         });
                     }
+                    if (data['error']) {
+                        $messages.append($('<li class="list-group-item bg-danger"></li>').text(data['error']));
+                    }
                     console.log('testDatabaseConnection::onsuccess', data);
                 },
                 error: function(xhr, status, errorThrown){

@@ -29,45 +29,59 @@ DatabaseRoute.prototype.use = function(webApp) {
     webApp.post('/testDatabaseConnection', function(req, resp){
         options['type'] = 'test';
         var db = new DatabaseConnection();
-        db.start(req, resp, options);
-    });
-
-    webApp.post('/runDatabaseConfiguration', function(req, resp){
-        options['type'] = 'run';
-        var db = new DatabaseConnection();
-        db.start(req, resp, options);
-    });
-
-    webApp.post('/testMysqlDump', function(req, resp){
-
-        options['type'] = 'testdump';
-        var db = new DatabaseConnection();
+        var returnJson = {messages:[]};
 
         db.on('error', function(error){
             returnJson['error'] = error;
             resp.json(returnJson);
         });
 
-        var returnJson = {messages:[]};
         db.on('message', function(message){
             returnJson.messages.push(message);
         });
 
+        db.on('finish', function(){
+            db.conn.end();
+            resp.json(returnJson);
+        });
+
         db.start(req, resp, options);
     });
+
+    webApp.post('/runDatabaseConfiguration', function(req, resp){
+        options['type'] = 'run';
+        var db = new DatabaseConnection();
+        var returnJson = {messages:[]};
+
+        db.on('error', function(error){
+            returnJson['error'] = error;
+            resp.json(returnJson);
+        });
+
+        db.on('message', function(message){
+            returnJson.messages.push(message);
+        });
+
+        db.on('finish', function(){
+            resp.json(returnJson);
+        });
+
+        db.start(req, resp, options);
+    });
+
 };
 
 
 //TODO: Refactor out the reliance on the web app, use events to send messages and errors
-function DatabaseConnection() {}
+function DatabaseConnection() {
+    events.EventEmitter.call(this);
+}
 
 util.inherits(DatabaseConnection, events.EventEmitter);
 
 DatabaseConnection.prototype.start = function(req, resp, options) {
-    events.EventEmitter.call(this);
     var self = this;
     var data = req.body; //TODO: Refactor into a set of options sent to var options
-    var returnJson = {messages:[]}; //TODO: refactor message delivery into emitted event
     var siteProfile = siteProfiles.get(data['site-profile']);
     var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
 
@@ -88,25 +102,15 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
         sshOptions['password'] = data['password'];
     }
 
-    var conn = new SSHConn();
+    var conn = this.conn = new SSHConn();
 
     try {
-        switch (type) {
-            case "testdump":
-                conn.onReady(function(){
-                    testMysqlDump();
-                });
-                break;
-            default:
-                conn.onReady(function(){
-                    checkSitePath();
-                });
-                break;
-        }
+        conn.onReady(function(){
+            checkSitePath();
+        });
     }
     catch (e) {
-        logMessage(util.format('Error thrown: %s', e));
-        resp.json(returnJson);
+        self.emit('error', e);
     }
 
     conn.connect(sshOptions);
@@ -120,11 +124,10 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
             if (err) throw err;
             stream.on('exit', function(exitCode){
                 if (exitCode == 1) {
-                    returnJson['messages'].push(util.format('Directory %s does not exist on server', siteProfile['sitePath']));
-                    resp.json(returnJson);
+                    self.emit('error', util.format('Directory %s does not exist on server', siteProfile['sitePath']));
                 }
                 else {
-                    returnJson['messages'].push(util.format('Directory %s found on server', siteProfile['sitePath']));
+                    self.emit('message', util.format('Directory %s found on server', siteProfile['sitePath']));
                     //Continue async into below method
                     getLocalXml();
                 }
@@ -135,7 +138,7 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
     /**
      * Gets local.xml from production path defined in site profile
      */
-    function getLocalXml(callback) {
+    function getLocalXml() {
 
         var filePath = path.join(path.normalize(siteProfile['sitePath']), 'app', 'etc', 'local.xml');
         var command = util.format('cat %s', filePath);
@@ -149,8 +152,7 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
 
             stream.on('exit', function(exitCode){
                 if (exitCode == 1) {
-                    returnJson['error'] = util.format('Did not find local.xml at %s on server', filePath);
-                    resp.json(returnJson);
+                    self.emit('error', util.format('Did not find local.xml at %s on server', filePath));
                 }
                 else if (exitCode == 0){ //File found, data should have collected into localXml
 
@@ -160,22 +162,17 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
                         parser.parse(localXml);
                     }
                     catch (e) {
-                        resp.end(e.message);
+                        self.emit('error', e.message);
                         return;
                     }
-                    returnJson['messages'].push(util.format('Found local.xml at %s', filePath));
+                    self.emit('message', util.format('Found local.xml at %s', filePath));
                     dbCommands = parser.commands;
                     dbData = parser.data;
-                    if (!callback) {
-                        checkMysqldump();
-                    }
-                    else {
-                        callback();
-                    }
+
+                    checkMysqldump();
                 }
                 else {
-                    returnJson['messages'].push('Something weird happened while trying to cat local.xml on server');
-                    resp.json(returnJson);
+                    self.emit('error', 'Something weird happened while trying to cat local.xml on server');
                 }
             });
         });
@@ -189,12 +186,12 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
             if (err) throw err;
             stream.on('exit', function(exitCode){
                 if (exitCode == 127) { //127 = command not found
-                    returnJson['error'] = 'mysqldump command does not exist or is not accessible on server!';
+                    self.emit('error', 'mysqldump command does not exist or is not accessible on server!');
                 }
                 else {
-                    returnJson['messages'].push('mysqldump command exists');
+                    self.emit('message', 'mysqldump command exists');
+                    checkMysqlConnection();
                 }
-                checkMysqlConnection();
             });
         });
     }
@@ -215,14 +212,15 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
             });
 
             myConn.connect(function(){
+                self.emit('message', 'MySQL tunnel connection established successfully!');
+
                 myConn.query('SHOW TABLES', function(err, rows, fields) {
                     if (err) {
-                        returnJson.error = err.message;
-                        resp.json(returnJson);
+                        self.emit('message', 'Problem trying to run SHOW TABLES command on MySQL server:');
+                        self.emit('error', err);
                     }
                     else {
-                        returnJson.messages.push('MySQL credentials are correct');
-                        returnJson.messages.push('MySQL tunnel connection established successfully!');
+                        self.emit('message', 'MySQL credentials are correct');
                         myConn.end(function(){
                             tunnel.closeTunnel();
                         });
@@ -243,7 +241,7 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
                 if (err) throw err;
 
                 stream.on('exit', function(exitCode){
-                    logMessage('Finished first mysqldump command, executing next...');
+                    self.emit('message', 'Finished first mysqldump command, executing next...');
                     secondCommand();
                 });
 
@@ -258,13 +256,12 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
 
                 stream.on('exit', function(exitCode){
                     if (exitCode == 0) {
-                        logMessage('Finished second mysqldump command, file should be created.');
+                        self.emit('message', 'Finished second mysqldump command, file should be created.');
                         checkFileExists();
                     }
                     else {
-                        logMessage('mysqldump command did not exit successfully');
-                        resp.json(returnJson);
                         conn.end();
+                        self.emit('error', 'mysqldump command did not exit successfully');
                     }
                 });
 
@@ -279,17 +276,14 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
                 var returnString;
                 stream.once('data', function(data){
                     returnString = ''+data;
-                    console.log('checkFileExists::onData: ' +returnString);
                 });
                 stream.on('exit', function(exitCode){
                     if (exitCode == 0) {
-                        logMessage(util.format('Dump file found at: %s', returnString));
+                        self.emit('message', util.format('Dump file found at: %s', returnString));
                         compressFile();
                     }
                     else {
-                        logMessage(util.format('Dump file not found: %s', returnString));
-                        resp.json(returnJson);
-                        conn.end();
+                        self.emit('error', util.format('Dump file not found: %s', returnString));
                     }
                 });
             });
@@ -300,28 +294,31 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
             var outFilename = util.format('%s.gz', dbData.filename);
             conn.connection.exec(command, function(err, stream){
                 if (err) throw err;
+                var returnString = '';
+
+                stream.on('data', function(data){
+                    returnString += data;
+                });
+
                 stream.on('exit', function(exitCode){
                     if (exitCode == 0) {
-                        logMessage('File compressed successfully');
-                        resp.json(returnJson);
+                        self.emit('message', 'File compressed successfully');
+                        downloadFile();
                     }
                     else {
-                        logMessage('gzip returned an error while compressing dump file');
-                        resp.json(returnJson);
+                        self.emit('error', util.format('gzip returned an error while compressing dump file: %s', returnString));
                     }
-                    conn.end();
                 });
             });
         }
 
         function downloadFile() {
-
+            self.emit('finish');
         }
 
         function enterPassword(stream) {
             stream.once('data', function(data){
                 var string = ''+data;
-                console.log("First data back from mysqldump: " + string);
                 if (string == 'Enter password: ') {
                     stream.write(dbData.password + "\n");
                 }
@@ -330,11 +327,6 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
                 }
             });
         }
-    }
-
-    function logMessage(message) {
-        returnJson.messages.push(message);
-        console.log(message);
     }
 }
 
