@@ -47,6 +47,7 @@ To see utilize the .map file in your browser, run this from project root: cd pub
 * Database Pull
     * Use a configured site profile to connect through SSH and download database
 
+
 ### TODO
 * MySQL command generator (existing, currently called "Home")
     * Add ability to use existing site profile to get the contents of a local.xml
@@ -62,7 +63,7 @@ To see utilize the .map file in your browser, run this from project root: cd pub
         * Flag for whether or not to use private key or a stored password for authentication
             * Automatically is set to private key when a .ssh/config entry is used
     * Store information gathered from SSH config file directly into the site profile to make data more portable
-
+        
 * DB Tool
     * Add --skip-lock-tables and --single-transaction to dump command as to not lock tables
     * Running of DB sanitization commands through SSH
@@ -77,5 +78,13 @@ To see utilize the .map file in your browser, run this from project root: cd pub
             * Run mysqldump commands as defined with user request ✔
             * If chosen, run scp command from local SSH to grab file from server into defined download directory
                 * Also consider straight piping of data with connection instead of reliance on scp command
-        * Connection Test
-            * Dry run of all of the above steps for the connection and running on mysqldump
+    * Connection Test
+        * Dry run of all of the above steps for the connection and running of mysqldump
+    * Fixes / Changes
+        * Store information gathered from SSH config file directly into the site profile to make data more portable
+
+* Command Line Access
+    * Refactor database dump module to emit events when complete instead of using resp.json to end request
+    * Completely detatch web application aspect from the dump module
+    * Implement CLI access through app.js (?), giving ability to run a site profile and perform same as the web app
+
