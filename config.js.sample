@@ -1,12 +1,15 @@
 var config = {};
 //Static configuration settings, eventually to be mutable by user from web app
+config.general = {};
 config.ssh = {};
 config.tunnel = {};
-config.db = {};
 config.web = {};
+
+config.general.downloadPath = '/path/to/downloads';
 
 config.ssh.passphrase = 'key_passphrase';
 
+//Port that SSH <-> MySQL tunnel will use on local machine
 config.tunnel.port = 12973;
 
 config.web.port = 8800;
