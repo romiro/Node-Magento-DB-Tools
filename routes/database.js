@@ -1,6 +1,7 @@
 var util = require('util');
 var events = require("events");
 var path = require('path');
+var fs = require('fs');
 
 var mysql = require('mysql');
 
@@ -16,7 +17,7 @@ function DatabaseRoute() {}
 
 DatabaseRoute.prototype.use = function(webApp) {
 
-    var options = {
+    var defaultOptions = {
         downloadPath: config.general.downloadPath
     };
 
@@ -26,8 +27,14 @@ DatabaseRoute.prototype.use = function(webApp) {
         resp.render('database');
     });
 
-    webApp.post('/testDatabaseConnection', function(req, resp){
-        options['type'] = 'test';
+    webApp.post('/testDatabaseConnection', function(req, resp) {
+        var options = util._extend(defaultOptions);
+        options.type = 'test';
+        options.siteProfile = req.body['site-profile'];
+        options.passOrKey = req.body['pass-or-key'];
+        options.password = req.body['password'];
+        options.ignoredTables = req.body['tables'];
+
         var db = new DatabaseConnection();
         var returnJson = {messages:[]};
 
@@ -45,11 +52,17 @@ DatabaseRoute.prototype.use = function(webApp) {
             resp.json(returnJson);
         });
 
-        db.start(req, resp, options);
+        db.start(options);
     });
 
     webApp.post('/runDatabaseConfiguration', function(req, resp){
-        options['type'] = 'run';
+        var options = util._extend(defaultOptions);
+        options.type = 'test';
+        options.siteProfile = req.body['site-profile'];
+        options.passOrKey = req.body['pass-or-key'];
+        options.password = req.body['password'];
+        options.ignoredTables = req.body['tables'];
+
         var db = new DatabaseConnection();
         var returnJson = {messages:[]};
 
@@ -66,7 +79,7 @@ DatabaseRoute.prototype.use = function(webApp) {
             resp.json(returnJson);
         });
 
-        db.start(req, resp, options);
+        db.start(options);
     });
 
 };
@@ -79,17 +92,14 @@ function DatabaseConnection() {
 
 util.inherits(DatabaseConnection, events.EventEmitter);
 
-DatabaseConnection.prototype.start = function(req, resp, options) {
-    var self = this;
-    var data = req.body; //TODO: Refactor into a set of options sent to var options
-    var siteProfile = siteProfiles.get(data['site-profile']);
-    var sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
-
-    var dbData, dbCommands, type;
-
-    if (options) {
-        type = options.type;
-    }
+DatabaseConnection.prototype.start = function(options) {
+    var self = this,
+        sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']),
+        dbData,
+        dbCommands,
+        type,
+        ignoredTables,
+        siteProfile;
 
     var sshOptions = {
         host: sshConfig['host'],
@@ -97,13 +107,25 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
         username: sshConfig['user']
     };
 
-    //Determine if password or key, setup object to pass to new SSHConn as appropriate
-    if (data['pass-or-key'] == 'password') {
-        sshOptions['password'] = data['password'];
+    //Options checking
+    type = options.type ? options.type : 'test';
+    ignoredTables = options.ignoredTables ? options.ignoredTables : [];
+
+    if (!options['siteProfile']) {
+        throw new Error('No site profile defined in options, cannot continue.');
     }
 
-    var conn = this.conn = new SSHConn();
+    siteProfile = siteProfiles.get(options['siteProfile']);
 
+    if (options['passOrKey'] == 'password') {
+        if (!options['password']) {
+            throw new Error('Login type of password chosen, but no password set!');
+        }
+        sshOptions['password'] = options['password'];
+    }
+
+    //Set up primary SSH connection
+    var conn = this.conn = new SSHConn();
 
     conn.onReady(function(){
         try {
@@ -115,6 +137,7 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
     });
 
     conn.connect(sshOptions);
+
 
     /**
      * Confirm directory defined in siteProfile exists
@@ -158,7 +181,7 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
                 else if (exitCode == 0){ //File found, data should have collected into localXml
 
                     var parser = new LocalXmlParser({dumpDirectory: '~/'});
-                    parser.setIgnoredTables(data.tables);
+                    parser.setIgnoredTables(ignoredTables);
                     try {
                         parser.parse(localXml);
                     }
@@ -314,13 +337,45 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
         }
 
         function downloadFile() {
+            var fileSize = 0;
 
             self.on('fileSize', function(size){
                 console.log('File size', size);
-                self.emit('finish');
+                fileSize += size;
+                getFile();
             });
 
             getFileSize();
+
+            function getFile() {
+                var command = util.format('dd if=%s bs=100k status=noxfer', dbData.filename + ".gz");
+                conn.connection.exec(command, function(err, stream){
+                    if (err) throw err;
+                    var buffers = [];
+                    var dataLength = 0;
+
+                    stream.on('data', function(chunk){
+                        console.log('Got %s bytes', chunk.length);
+                        if (chunk.constructor.name == 'Buffer') {
+                            buffers.push(chunk);
+                            dataLength += chunk.length ? chunk.length : 0;
+                        }
+                    });
+
+                    stream.on('error', function(error){
+                        console.log('Error: %s', error);
+                    });
+
+                    stream.on('end', function(exitCode){
+                        var data = Buffer.concat(buffers);
+                        console.log('dd exited with code %s', exitCode);
+
+                        fs.writeFile('/home/rrogers/magento_ee_test.gz', data, function(){
+                            self.emit('finish');
+                        });
+                    });
+                });
+            }
 
             function getFileSize() {
                 var command = util.format('stat -c%%s "%s"', dbData.filename + ".gz");
@@ -356,7 +411,7 @@ DatabaseConnection.prototype.start = function(req, resp, options) {
             });
         }
     }
-}
+};
 
 
 module.exports = new DatabaseRoute();

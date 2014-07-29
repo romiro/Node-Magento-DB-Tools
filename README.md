@@ -78,6 +78,7 @@ To see utilize the .map file in your browser, run this from project root: cd pub
             * Run mysqldump commands as defined with user request ✔
             * If chosen, run scp command from local SSH to grab file from server into defined download directory
                 * Also consider straight piping of data with connection instead of reliance on scp command
+            * ALTERNATIVE: Output content using 'dd' using blocks the same size as the read command will accept
     * Connection Test
         * Dry run of all of the above steps for the connection and running of mysqldump
     * Fixes / Changes
