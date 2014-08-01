@@ -94,12 +94,47 @@ util.inherits(DatabaseConnection, events.EventEmitter);
 
 DatabaseConnection.prototype.start = function(options) {
     var self = this,
-        sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']),
+        sshConfig,
         dbData,
         dbCommands,
         type,
         ignoredTables,
-        siteProfile;
+        siteProfile,
+        downloadPath;
+
+    //Options checking
+    type = options.type ? options.type : 'test';
+    ignoredTables = options.ignoredTables ? options.ignoredTables : [];
+
+    if (!options['siteProfile']) {
+        self.emit('error', 'No site profile defined in options, cannot continue.');
+        return false;
+    }
+
+    //Check that defined downloadPath exists and is writable
+    downloadPath = options.downloadPath;
+    if (!fs.existsSync(downloadPath)) {
+        self.emit('error', 'downloadPath defined in config.js does not exist');
+        return false;
+    }
+
+    try {
+        fs.openSync(path.join(downloadPath, 'testfile.txt'), 'w');
+        fs.unlinkSync(path.join(downloadPath, 'testfile.txt'));
+    }
+    catch (e) {
+        if (e.code == 'EACCES') {
+            self.emit('error', 'downloadPath defined in config.js is not writable');
+        }
+        else {
+            self.emit('error', 'Problem while checking for permissions to write to downloadPath: ', e);
+        }
+        return false;
+    }
+
+    //Get associated site profile from store
+    siteProfile = siteProfiles.get(options['siteProfile']);
+    sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
 
     var sshOptions = {
         host: sshConfig['host'],
@@ -107,19 +142,10 @@ DatabaseConnection.prototype.start = function(options) {
         username: sshConfig['user']
     };
 
-    //Options checking
-    type = options.type ? options.type : 'test';
-    ignoredTables = options.ignoredTables ? options.ignoredTables : [];
-
-    if (!options['siteProfile']) {
-        throw new Error('No site profile defined in options, cannot continue.');
-    }
-
-    siteProfile = siteProfiles.get(options['siteProfile']);
-
     if (options['passOrKey'] == 'password') {
         if (!options['password']) {
-            throw new Error('Login type of password chosen, but no password set!');
+            self.emit('emit', 'Login type of password chosen, but no password set!');
+            return false;
         }
         sshOptions['password'] = options['password'];
     }
@@ -337,43 +363,24 @@ DatabaseConnection.prototype.start = function(options) {
         }
 
         function downloadFile() {
-            var fileSize = 0;
 
             self.on('fileSize', function(size){
-                console.log('File size', size);
-                fileSize += size;
+                console.log('File size:', size);
                 getFile();
+            });
+
+            self.on('getFile', function(fileData){
+                saveToLocal(fileData);
             });
 
             getFileSize();
 
-            function getFile() {
-                var command = util.format('dd if=%s bs=100k status=noxfer', dbData.filename + ".gz");
-                conn.connection.exec(command, function(err, stream){
+            function saveToLocal(fileData) {
+                var downloadFilePath = path.join(downloadPath, dbData.filename + ".gz");
+                fs.writeFile(downloadFilePath, fileData, function(err){
                     if (err) throw err;
-                    var buffers = [];
-                    var dataLength = 0;
-
-                    stream.on('data', function(chunk){
-                        console.log('Got %s bytes', chunk.length);
-                        if (chunk.constructor.name == 'Buffer') {
-                            buffers.push(chunk);
-                            dataLength += chunk.length ? chunk.length : 0;
-                        }
-                    });
-
-                    stream.on('error', function(error){
-                        console.log('Error: %s', error);
-                    });
-
-                    stream.on('end', function(exitCode){
-                        var data = Buffer.concat(buffers);
-                        console.log('dd exited with code %s', exitCode);
-
-                        fs.writeFile('/home/rrogers/magento_ee_test.gz', data, function(){
-                            self.emit('finish');
-                        });
-                    });
+                    self.emit('message', util.format('Successfully downloaded file to %s!', downloadFilePath));
+                    self.emit('finish');
                 });
             }
 
@@ -396,6 +403,38 @@ DatabaseConnection.prototype.start = function(options) {
                     });
                 });
             }
+
+            function getFile() {
+                var command = util.format('dd if=%s bs=100k status=noxfer', dbData.filename + ".gz");
+                conn.connection.exec(command, function(err, stream){
+                    if (err) throw err;
+                    var buffers = [];
+                    var dataLength = 0;
+
+                    stream.on('data', function(chunk){
+//                        console.log('Got %s bytes', chunk.length);
+                        if (chunk.constructor.name == 'Buffer') {
+                            buffers.push(chunk);
+                            dataLength += chunk.length ? chunk.length : 0;
+                        }
+                    });
+
+                    stream.on('error', function(error){
+                        console.log('Error with dd on remote server: %s', error);
+                    });
+
+                    stream.on('end', function(exitCode){
+                        var data = Buffer.concat(buffers);
+                        console.log('Buffer size:', data.length);
+                        console.log('dd exited with code %s', exitCode);
+
+                        self.emit('getFile', data);
+
+
+                    });
+                });
+            }
+
 
         }
 
