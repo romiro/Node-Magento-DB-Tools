@@ -144,7 +144,7 @@ DatabaseConnection.prototype.start = function(options) {
 
     if (options['passOrKey'] == 'password') {
         if (!options['password']) {
-            self.emit('emit', 'Login type of password chosen, but no password set!');
+            self.emit('error', 'Login type of password chosen, but no password set!');
             return false;
         }
         sshOptions['password'] = options['password'];
@@ -398,7 +398,8 @@ DatabaseConnection.prototype.start = function(options) {
                             self.emit('fileSize', returnString);
                         }
                         else {
-                            throw new Error('Problem with stat command while trying to get file size');
+                            self.emit('error', 'Problem with stat command while trying to get file size');
+                            return false;
                         }
                     });
                 });
@@ -420,7 +421,7 @@ DatabaseConnection.prototype.start = function(options) {
                     });
 
                     stream.on('error', function(error){
-                        console.log('Error with dd on remote server: %s', error);
+                        self.emit('error', 'Error with dd on remote server: %s', error);
                     });
 
                     stream.on('end', function(exitCode){
