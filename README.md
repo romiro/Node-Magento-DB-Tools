@@ -53,34 +53,37 @@ To see utilize the .map file in your browser, run this from project root: cd pub
     * Add ability to use existing site profile to get the contents of a local.xml
 
 * Configuration Options
-    * Download path in user's filesystem for SCP downloads of database dumps
+    * ~~Download path in user's filesystem for SCP downloads of database dumps~~
+    * Refactor config.js to use the json-store class instead
+        * Save values directly to file when "save" is pressed on frontend
 
 * Site Profile system
-    * Has own page for administration CRUD ✔
+    * ~~Has own page for administration CRUD~~ ✔
     * Create and store profiles for client sites with the following data:
-        * Relevant SSH login credentials pulled from .ssh/config ✔
-        * System path of production environment on SSH server ✔
-        * Flag for whether or not to use private key or a stored password for authentication
-            * Automatically is set to private key when a .ssh/config entry is used
+        * ~~Relevant SSH login credentials pulled from .ssh/config~~ ✔
+        * ~~System path of production environment on SSH server~~ ✔
+        * ~~Flag for whether or not to use private key or a stored password for authentication~~ ✔
+            * ~~Automatically is set to private key when a .ssh/config entry is used~~ ✔
     * Store information gathered from SSH config file directly into the site profile to make data more portable
         
 * DB Tool
-    * Add --skip-lock-tables and --single-transaction to dump command as to not lock tables
+    * ~~Add --skip-lock-tables and --single-transaction to dump command as to not lock tables~~
     * Running of DB sanitization commands through SSH
         * New page, using elements from data sanitization view ✔
-            * Option: Either full-dump mode or selectively using certain tables ✔
-            * Option: Database table checkboxes for ignore-table params ✔
-            * Option: Download file via scp from server after creation
+            * ~~Option: Either full-dump mode or selectively using certain tables~~ ✔
+            * ~~Option: Database table checkboxes for ignore-table params~~ ✔
+            * ~~Option: Download file via scp from server after creation~~ ✔
         * Connect to SSH server using site profile
-            * Find local.xml using system path defined in system profile ✔
-            * Extract DB information from &lt;resources> node of local.xml ✔
-            * Use same JS functions as frontend page to create mysqldump commands ✔
-            * Run mysqldump commands as defined with user request ✔
+            * ~~Find local.xml using system path defined in system profile~~ ✔
+            * ~~Extract DB information from &lt;resources> node of local.xml~~ ✔
+            * ~~Use same JS functions as frontend page to create mysqldump commands~~ ✔
+            * ~~Run mysqldump commands as defined with user request~~ ✔
             * If chosen, run scp command from local SSH to grab file from server into defined download directory
-                * Also consider straight piping of data with connection instead of reliance on scp command
-            * ALTERNATIVE: Output content using 'dd' using blocks the same size as the read command will accept
+                * Also consider straight piping of data with connection instead of reliance on scp command ✔
+                * SCP may be the final answer as some issues have developed with the straight piping method currently implemented
     * Connection Test
         * Dry run of all of the above steps for the connection and running of mysqldump
+            * Currently "Test" and "Run" perform the same actions. Needs refactored that testing just performs tests.
     * Fixes / Changes
         * Store information gathered from SSH config file directly into the site profile to make data more portable
 
@@ -88,4 +91,9 @@ To see utilize the .map file in your browser, run this from project root: cd pub
     * Refactor database dump module to emit events when complete instead of using resp.json to end request
     * Completely detatch web application aspect from the dump module
     * Implement CLI access through app.js (?), giving ability to run a site profile and perform same as the web app
+
+* Long Term Plans, New Features
+    * PHP Info
+        * Query a configured server for the output of php -i as run through CLI
+        * Same as above but as webserver. Create temporary .php file with hash-like name that includes phpinfo(),
 
