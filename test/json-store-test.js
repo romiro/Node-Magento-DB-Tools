@@ -58,7 +58,6 @@ describe('Json Store', function(){
             it('should retrieve a value from supplied index', function(){
                 var value = testStore.get(0);
                 expect(value).to.equal('value1');
-                //assert(value === 'value');
             });
         });
 

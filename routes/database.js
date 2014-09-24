@@ -39,11 +39,13 @@ DatabaseRoute.prototype.use = function(webApp) {
         var returnJson = {messages:[]};
 
         db.on('error', function(error){
+            console.log('ERROR EVENT: %s', error);
             returnJson['error'] = error;
             resp.json(returnJson);
         });
 
         db.on('message', function(message){
+            console.log(message);
             returnJson.messages.push(message);
         });
 
@@ -57,7 +59,7 @@ DatabaseRoute.prototype.use = function(webApp) {
 
     webApp.post('/runDatabaseConfiguration', function(req, resp){
         var options = util._extend(defaultOptions);
-        options.type = 'test';
+        options.type = 'run';
         options.siteProfile = req.body['site-profile'];
         options.passOrKey = req.body['pass-or-key'];
         options.password = req.body['password'];
@@ -239,7 +241,7 @@ DatabaseConnection.prototype.start = function(options) {
                     self.emit('error', 'mysqldump command does not exist or is not accessible on server!');
                 }
                 else {
-                    self.emit('message', 'mysqldump command exists');
+                    self.emit('message', 'mysqldump command exists on server');
                     checkMysqlConnection();
                 }
             });
@@ -267,22 +269,31 @@ DatabaseConnection.prototype.start = function(options) {
                 myConn.query('SHOW TABLES', function(err, rows, fields) {
                     if (err) {
                         self.emit('message', 'Problem trying to run SHOW TABLES command on MySQL server:');
-                        self.emit('error', err);
+                        self.emit('error', util.inspect(err));
                     }
                     else {
                         self.emit('message', 'MySQL credentials are correct');
-                        myConn.end(function(){
-                            tunnel.closeTunnel();
-                        });
-                        runMysqlDump();
+
+                        //This is where type=test and type=run diverge
+                        if (type == 'run') {
+                            runMysqlDump();
+                        }
+                        else {
+                            self.emit('message', 'Finished testing connection and parameters');
+                            self.emit('finish');
+                        }
                     }
+                    myConn.end(function(){
+                        console.log('Closing MySQL Tunnel...');
+                        tunnel.closeTunnel();
+                    });
                 });
             });
         });
     }
 
     function runMysqlDump() {
-        //Run "frist command" as defined in local xml parser
+        //Run "first command" as defined in local xml parser
         firstCommand();
 
         function firstCommand() {
