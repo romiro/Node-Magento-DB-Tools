@@ -1,30 +1,22 @@
 var util = require('util');
-var events = require("events");
-var path = require('path');
-var fs = require('fs');
 
-var mysql = require('mysql');
-
-var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
-
 
 var DatabaseConnection = require('../lib/database-connection');
 var config = require('../config');
 
-var siteProfiles;
+var siteProfiles, siteProfile, sshConfig;
 
 function DatabaseRoute() {}
 
 DatabaseRoute.prototype.use = function(webApp) {
 
+    //Setup default options for Run and Test requests
     var defaultOptions = {
         downloadPath: config.general.downloadPath
     };
 
     siteProfiles = webApp.locals.siteProfiles;
-
-    defaultOptions.siteProfile = siteProfiles.get(req.body['site-profile']);
 
     //Auto DB Sanitizer & Downloader
     webApp.get('/database', function(req, resp){
@@ -37,6 +29,9 @@ DatabaseRoute.prototype.use = function(webApp) {
         options.passOrKey = req.body['pass-or-key'];
         options.password = req.body['password'];
         options.ignoredTables = req.body['tables'];
+
+        siteProfile = options.siteProfile = siteProfiles.get(req.body['site-profile']);
+        sshConfig = options.sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
 
         var db = new DatabaseConnection();
         var returnJson = {messages:[]};
@@ -67,19 +62,25 @@ DatabaseRoute.prototype.use = function(webApp) {
         options.password = req.body['password'];
         options.ignoredTables = req.body['tables'];
 
+        siteProfile = options.siteProfile = siteProfiles.get(req.body['site-profile']);
+        sshConfig = options.sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
+
         var db = new DatabaseConnection();
         var returnJson = {messages:[]};
 
         db.on('error', function(error){
             returnJson['error'] = error;
+            console.log('DatabaseConnection ERROR :: ' + error);
             resp.json(returnJson);
         });
 
         db.on('message', function(message){
+            console.log('DatabaseConnection :: ' + message);
             returnJson.messages.push(message);
         });
 
         db.on('finish', function(){
+            console.log('DatabaseConnection :: FINISH');
             resp.json(returnJson);
         });
 

@@ -71,15 +71,15 @@ function DatabasePage() {
         });
 
         //Action buttons
-        $('#test-connection, #testMysqlDump').on('click', function(event){
+        $('#test-connection, #run-config').on('click', function(event){
             var $inputs = $('#database-form').find(':input').not(':button');
             if (!Tools.validate($inputs, $container)) {
                 return false;
             }
 
             var url;
-            if ($(this).is('#testMysqlDump')) {
-                url = '/testMysqlDump';
+            if ($(this).is('#run-config')) {
+                url = '/runDatabaseConfiguration';
             }
             else {
                 url = '/testDatabaseConnection';
