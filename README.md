@@ -82,8 +82,8 @@ To see utilize the .map file in your browser, run this from project root: cd pub
                 * Also consider straight piping of data with connection instead of reliance on scp command ✔
                 * SCP may be the final answer as some issues have developed with the straight piping method currently implemented
     * Connection Test
-        * Dry run of all of the above steps for the connection and running of mysqldump
-            * Currently "Test" and "Run" perform the same actions. Needs refactored that testing just performs tests.
+        * ~~Dry run of all of the above steps for the connection and running of mysqldump~~ ✔
+            * ~~Currently "Test" and "Run" perform the same actions. Needs refactored that testing just performs tests.~~ ✔
     * Fixes / Changes
         * Store information gathered from SSH config file directly into the site profile to make data more portable
 
