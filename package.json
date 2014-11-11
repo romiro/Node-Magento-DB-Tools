@@ -1,7 +1,8 @@
 {
-  "name": "node-magento-db-tools",
+  "name": "magento-db-tools",
   "version": "0.0.1",
   "dependencies": {
+    "commander": "^2.5.0",
     "ejs": "~0.8.5",
     "ejs-locals": "~1.0.2",
     "express": "~3.4.8",

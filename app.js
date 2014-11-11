@@ -1,37 +1,17 @@
-var config = require('./config');
-var mysql = require('mysql');
-var webServer = require('./webserver');
+var program = require('commander'),
+    webServer = require('./webserver');
 
-function MyServer(){
+program
+    .version('0.5')
+    .option('--start-server', 'Start webserver using options defined in config.js')
+    .option('--list-profiles', 'List configured site profiles')
+    .option('--run-profile [profile name]', 'Run given profile')
+    .option('--full-dump', 'Used with --run-profile, performs a full DB dump')
+    .option('--selective-dump', 'Used with --run-profile, performs a selective table dump with default tables excluded');
 
+function MagentoDbTools(){
     webServer.startServer();
-
-//    SSHTunnel.connect(function(){
-//
-//        var myConn = mysql.createConnection({
-//            host: config.db.host,
-//            port: config.tunnel.port,
-//            user: config.db.user,
-//            password: config.db.password,
-//            database: config.db.database
-//        });
-/*
-
-        //Now we are tunneled, try to connect to mysql
-        myConn.connect();
-
-        //Test query
-        myConn.query('SELECT * from core_config_data where path like "%url%"', function(err, rows, fields) {
-            if (err) throw err;
-            console.log(rows);
-        });
-
-*/
-
-//    });
-
-
 }
 
-new MyServer();
+new MagentoDbTools();
 
