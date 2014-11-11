@@ -12,13 +12,12 @@ program
 
 
 function MagentoDbTools(){
-    if (process.startServer) {
+    if (program.startServer) {
         webServer.startServer();
     }
-    else if (process.runProfile) {
+    else if (program.runProfile) {
         console.log(process.runProfile);
     }
 }
 
 new MagentoDbTools();
-
