@@ -80,14 +80,13 @@ describe('Json Store', function(){
                 expect(name).to.deep.equal({name: 'value2', description: 'A test value'});
             });
         });
-
-
-        /**
-         * Cleanup test
-         */
-        after(function(){
-            fs.unlinkSync(path.join(storageDir, 'test.json'));
-        });
     });
 
+
+    /**
+     * Cleanup test
+     */
+    after(function(){
+        fs.unlinkSync(path.join(storageDir, 'test.json'));
+    });
 });
