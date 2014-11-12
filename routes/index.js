@@ -1,12 +1,10 @@
 'use strict';
 
-var util = require('util');
-
 var config = require('../config');
-var JsonStore = require('../lib/json-store');
+
 var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
-//var dbSocket = require('./sockets/db');
+var siteProfiles = require('../lib/site-profiles');
 
 var dbRoutes = require('./database');
 
@@ -43,8 +41,6 @@ Routes.prototype.use = function (webApp) {
         resp.render('site-profiles');
     });
 
-    var siteProfiles = webApp.locals.siteProfiles = new JsonStore('site-profiles');
-
     webApp.get('/getSiteProfiles', function(req, resp){
         resp.json(siteProfiles.getAll());
     });
@@ -76,11 +72,6 @@ Routes.prototype.use = function (webApp) {
     });
 
     dbRoutes.use(webApp);
-
-
-    //Pass handling to other module in my crazy unpatterned way
-//    var dbSocketHandler = require('./sockets/db');
-//    dbSocketHandler.init(webApp);
 
     webApp.get('/getSshConfig', function(req, resp){
         resp.json(SSHConfig.getHosts());

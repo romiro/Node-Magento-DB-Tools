@@ -4,7 +4,6 @@ var http = require('http');
 var engine = require('ejs-locals');
 var socketIo = require('socket.io');
 
-//var SSHTunnel = require('./lib/ssh-tunnel');
 var routes = require('./routes');
 var config = require('./config');
 

@@ -1,5 +1,5 @@
 var program = require('commander'),
-    webServer = require('./webserver');
+    _ = require('underscore');
 
 program
     .version('0.5')
@@ -13,10 +13,19 @@ program
 
 function MagentoDbTools(){
     if (program.startServer) {
+        var webServer = require('./webserver');
         webServer.startServer();
     }
+    else if (program.listProfiles) {
+        var siteProfiles = require('./lib/site-profiles').getAll();
+        console.log("\n\nStored Site Profiles:\n-----------------------------");
+        _.each(siteProfiles, function(val){
+            console.log("\t%s", val['profileName']);
+        });
+        console.log("\nExample Usage: --run-profile \"%s\"\n", siteProfiles[0]['profileName']);
+    }
     else if (program.runProfile) {
-        console.log(process.runProfile);
+        console.log("Not implemented :(");
     }
 }
 
