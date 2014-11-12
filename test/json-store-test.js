@@ -33,7 +33,7 @@ describe('Json Store', function(){
             });
         });
 
-        describe('push data', function(){
+        describe('push scalar data', function(){
             it('should set without an error', function(){
                 testStore.push('value1');
             });
@@ -65,6 +65,19 @@ describe('Json Store', function(){
             it('should return all of the set keys', function() {
                 var allData = testStore.getAll();
                 expect(allData).to.deep.equal(['value1','value2']);
+            });
+        });
+
+        describe('push complex data', function(){
+            it('should set without an error', function(){
+                testStore.push({name: 'value2', description: 'A test value'});
+            });
+        });
+
+        describe('findBy', function(){
+            it('should find data by searching a given property value', function(){
+                var name = testStore.getBy('name', 'value2');
+                expect(name).to.deep.equal({name: 'value2', description: 'A test value'});
             });
         });
 
