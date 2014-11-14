@@ -35,6 +35,9 @@ function MagentoDbTools(){
         }
     }
     else if (program['runProfile']) {
+        var options = {};
+        var profile = siteProfiles.getBy('profileName', program['runProfile']);
+
         console.log("Not implemented :(");
     }
 }
