@@ -70,10 +70,19 @@ function DatabasePage() {
             }
         });
 
+        var isDbConnRunning = false;
         //Action buttons
         $('#test-connection, #run-config').on('click', function(event){
+            if (isDbConnRunning === true) {
+                window.alert('A profile is currently running, cannot continue');
+                event.stopPropagation();
+                return false;
+            }
+            isDbConnRunning = true;
+
             var $inputs = $('#database-form').find(':input').not(':button');
             if (!Tools.validate($inputs, $container)) {
+                isDbConnRunning = false;
                 return false;
             }
 
@@ -104,7 +113,7 @@ function DatabasePage() {
                     if (data['error']) {
                         $messages.append($('<li class="list-group-item bg-danger"></li>').text(data['error']));
                     }
-                    console.log('testDatabaseConnection::onsuccess', data);
+                    console.log('DatabaseConnection::onsuccess', data);
                 },
                 error: function(xhr, status, errorThrown){
                     var response = xhr.responseText;
@@ -114,6 +123,8 @@ function DatabasePage() {
                 },
                 complete: function() {
                     Tools.hideWait();
+                    isDbConnRunning = false;
+                    console.log('DatabaseConnection::oncomplete');
                 }
             });
         });

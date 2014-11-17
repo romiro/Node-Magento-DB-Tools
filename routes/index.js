@@ -12,6 +12,8 @@ function Routes() {}
 
 Routes.prototype.use = function (webApp) {
 
+    webApp.locals.siteProfiles = siteProfiles;
+
     webApp.get('/', function(req, resp){
         resp.render('index');
     });
