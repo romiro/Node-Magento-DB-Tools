@@ -65,6 +65,19 @@ function SiteProfiles() {
                 }
             });
         });
+
+        $container.on('click', '.edit-profile .panel-heading', function(event){
+            var $panelBody = $(this).siblings('.panel-body');
+            var slideDuration = 200;
+            $panelBody.toggleClass('show-panel');
+            if ($panelBody.hasClass('show-panel')) {
+                $panelBody.slideDown(slideDuration);
+            }
+            else {
+                $panelBody.slideUp(slideDuration);
+            }
+
+        });
     }
 
     function renderProfiles() {
