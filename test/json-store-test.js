@@ -77,4 +77,15 @@ describe('Json Store', function(){
         });
     });
 
+<<<<<<< Updated upstream
+=======
+
+    /**
+     * Cleanup test
+     */
+    after(function(){
+        fs.unlinkSync(path.join(storageDir, 'test.json'));
+        fs.unlinkSync(path.join('./lib', 'storage', 'test.json'));
+    });
+>>>>>>> Stashed changes
 });
