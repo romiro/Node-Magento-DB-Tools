@@ -19,7 +19,7 @@ Copy, rename, and modify config.js.sample to config.js and adjust values as need
 
 After that, just
 
-    node app.js
+    ./app --start-server
     
 And browse to http://localhost:8800 (or whichever port you configured for your web server)
 

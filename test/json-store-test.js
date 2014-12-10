@@ -33,7 +33,7 @@ describe('Json Store', function(){
             });
         });
 
-        describe('push data', function(){
+        describe('push scalar data', function(){
             it('should set without an error', function(){
                 testStore.push('value1');
             });
@@ -68,17 +68,21 @@ describe('Json Store', function(){
             });
         });
 
-
-        /**
-         * Cleanup test
-         */
-        after(function(){
-            fs.unlinkSync(path.join(storageDir, 'test.json'));
+        describe('push complex data', function(){
+            it('should set without an error', function(){
+                testStore.push({name: 'value2', description: 'A test value'});
+            });
         });
-    });
 
-<<<<<<< Updated upstream
-=======
+        describe('findBy', function(){
+            it('should find data by searching a given property value', function(){
+                var name = testStore.getBy('name', 'value2');
+                expect(name).to.deep.equal({name: 'value2', description: 'A test value'});
+            });
+        });
+
+
+    });
 
     /**
      * Cleanup test
@@ -87,5 +91,4 @@ describe('Json Store', function(){
         fs.unlinkSync(path.join(storageDir, 'test.json'));
         fs.unlinkSync(path.join('./lib', 'storage', 'test.json'));
     });
->>>>>>> Stashed changes
 });

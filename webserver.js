@@ -4,8 +4,7 @@ var http = require('http');
 var engine = require('ejs-locals');
 var socketIo = require('socket.io');
 
-//var SSHTunnel = require('./lib/ssh-tunnel');
-var routes = require('./routes');
+var routes = require('./routes/index');
 var config = require('./config');
 
 
@@ -42,9 +41,10 @@ function WebServer() {
     //End routing chain
 
 
-    this.startServer = function() {
-        server.listen(config.web.port);
-        console.log('Web server now listening for connections on '+config.web.port);
+    this.startServer = function(port) {
+        port = port || config.web.port;
+        server.listen(port);
+        console.log('Web server now listening for connections on '+port);
     };
 
     function respNotFound(req, resp) {
