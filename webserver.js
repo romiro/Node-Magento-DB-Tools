@@ -2,7 +2,6 @@
 var express = require('express');
 var http = require('http');
 var engine = require('ejs-locals');
-var socketIo = require('socket.io');
 
 var routes = require('./routes/index');
 var config = require('./config');
@@ -12,14 +11,12 @@ function WebServer() {
 
     var webApp = this.webApp = express();
     var server = http.createServer(webApp);
-    var io = socketIo.listen(server);
 
 
     //Local variables configuration
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
-    webApp.locals.io = io;
 
     //Views setup
     webApp.engine('ejs', engine);

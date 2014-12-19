@@ -1,7 +1,6 @@
 function DatabasePage() {
 
     var siteProfiles, sshConfig;
-//    var databaseIo = io.connect('/database');
 
     var $container = $('#database');
     var $display = $('#database-display');
@@ -18,7 +17,6 @@ function DatabasePage() {
 
     setupEvents();
     setupDefaults();
-//    setupSocket();
 
     /**
      * Sets up events
@@ -136,15 +134,6 @@ function DatabasePage() {
     function setupDefaults() {
         $('input[type=radio][name=pass-or-key].key').trigger('click');
         $('input[type=radio][name=dump-type].selective').trigger('click');
-    }
-
-    function setupSocket() {
-        databaseIo.on('connect', function(){
-            console.log('db socket connect');
-            databaseIo.on('db-message', function(message){
-                console.log('FROM SOCKET :: db-message', message);
-            });
-        });
     }
 
     /**
