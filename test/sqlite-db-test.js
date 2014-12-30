@@ -38,7 +38,7 @@ describe('sqlite database', function(){
         });
     });
 
-    describe('Database schema import and verification', function(){
+    describe('Database schema import, inserts, and selects', function(){
         it('Should create a database based on given schema without error', function(done){
             var db = sqliteDb;
             db.connect(dbFile);
@@ -73,12 +73,31 @@ describe('sqlite database', function(){
             });
         });
 
-        it('Should retrieve the inserted row and validate', function(done){
+        it('Should retrieve the inserted row and validate using raw query', function(done){
             var db = sqliteDb;
 
             db.connection.get('SELECT name FROM Client WHERE client_code="spk"', function(err, row){
                 if (err) throw err;
                 expect(row.name).to.equal('Speck');
+                done();
+            });
+        });
+
+        it('Should retrieve the inserted row using prepared statement', function(done){
+            var db = sqliteDb;
+            var stmt = db.connection.prepare('SELECT name FROM Client WHERE client_code=?');
+            stmt.get('spk', function(err, row){
+                if (err) throw err;
+                expect(row.name).to.equal('Speck');
+                done();
+            });
+        });
+
+        it('Should delete the row from the table', function(done){
+            var db = sqliteDb;
+            db.connection.run('DELETE FROM Client WHERE client_code="spk"', function(err){
+                if (err) throw err;
+                expect(this.changes).to.equal(1);
                 done();
             });
         });
