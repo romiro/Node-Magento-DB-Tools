@@ -54,15 +54,15 @@ Routes.prototype.use = function (webApp) {
     });
 
     //Site Profiles
-    webApp.get('/site-profiles', function(req, resp){
+    webApp.get('/profiles', function(req, resp){
         resp.render('site-profiles');
     });
 
-    webApp.get('/getProfiles', function(req, resp){
+    webApp.get('/Profiles/getAll', function(req, resp){
         resp.json(siteProfiles.getAll());
     });
 
-    webApp.post('/saveProfile', function(req, resp){
+    webApp.post('/Profiles/save', function(req, resp){
         var sshEntry = SSHConfig.getHostByName(req.body['ssh-config-name']);
         var key = req.body['key'] ? req.body['key'] : null;
         var data = {
@@ -77,7 +77,7 @@ Routes.prototype.use = function (webApp) {
         resp.end();
     });
 
-    webApp.post('/deleteProfile', function(req, resp){
+    webApp.post('/Profiles/delete', function(req, resp){
         var key = req.body['key'];
         try {
             siteProfiles.remove(key);
