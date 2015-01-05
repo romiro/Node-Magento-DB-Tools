@@ -67,7 +67,7 @@ describe('sqlite database', function(){
         it('Should insert rows into the Client table without error', function(done){
             var db = sqliteDb;
 
-            db.connection.run('INSERT INTO Client (client_code, name) VALUES ("spk", "Speck")', function(err){
+            db.run('INSERT INTO Client (client_code, name) VALUES ("spk", "Speck")', function(err){
                 if (err) throw err;
                 done();
             });
@@ -102,20 +102,18 @@ describe('sqlite database', function(){
             });
         });
     });
-/*
 
-    describe('Client functionality', function(){
 
-        it('Should get all client records without error', function(){
+    describe('Model functionality', function(){
+
+        it('Should get all client records without error', function(done){
             var db = sqliteDb;
-            db.connect();
-            db.connection.serialize(function(){
-                var records = db.Client.getAll();
+            var records = db.Client.getAll(function(records){
                 console.log(records);
+                done();
             });
         });
     });
-*/
 
 
     /**

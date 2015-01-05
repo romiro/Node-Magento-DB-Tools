@@ -15,6 +15,7 @@ function SqliteDb() {
     this.Client = new Client(this);
     this.Server = new Server(this);
     this.Profile = new Profile(this);
+    this.connected = false;
 }
 
 SqliteDb.prototype.connect = function(filepath) {
@@ -22,6 +23,11 @@ SqliteDb.prototype.connect = function(filepath) {
         filepath = 'db/storage/test.sqlite';
     }
     this.connection = new sqlite3.Database(filepath);
+    this.connected = true;
+};
+
+SqliteDb.prototype.run = function(statement, params) {
+    this.connection.run.apply(this.connection, arguments);
 };
 
 module.exports = new SqliteDb();
