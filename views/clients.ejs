@@ -1,5 +1,32 @@
 <% layout('layout'); %>
+
+<% script('/js/db-view.js'); %>
 <% script('/js/clients.js'); %>
 
 
-<%- rows %>
+<div id="clients" class="database-view"></div>
+
+<div id="template" class="client-template">
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <form>
+                <input type="hidden" name="id" />
+                <div class="form-group">
+                    <label for="name">Client Name</label>
+                    <input type="text" class="form-control name" name="name" placeholder="Client Name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="client_code">Client Code</label>
+                    <input type="text" class="form-control" name="client_code" placeholder="Two to three letter client code" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        var clients = new Clients();
+    });
+</script>

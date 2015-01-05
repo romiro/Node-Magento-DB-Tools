@@ -43,10 +43,31 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.get('/clients', function(req, resp){
-        sqliteDb.Client.getAll(function(rows){
+        resp.render('clients');
+    });
 
-            resp.render('clients', {rows:rows});
+    webApp.get('/Clients/getAll', function(req, resp){
+        sqliteDb.Client.getAll(function(data){
+            resp.json(data);
         });
+    });
+
+    webApp.post('/Clients/save', function(req, resp){
+        var params = req.body;
+        if (params.id) {
+            sqliteDb.Client.update(params, function(){
+                resp.json({});
+            });
+        }
+        else {
+            sqliteDb.Client.insert(params, function(lastId){
+                resp.end();
+            });
+        }
+    });
+
+    webApp.post('/Clients/delete', function(req, resp){
+
     });
 
     webApp.get('/servers', function(req, resp){
@@ -55,7 +76,7 @@ Routes.prototype.use = function (webApp) {
 
     //Site Profiles
     webApp.get('/profiles', function(req, resp){
-        resp.render('site-profiles');
+        resp.render('profiles');
     });
 
     webApp.get('/Profiles/getAll', function(req, resp){
