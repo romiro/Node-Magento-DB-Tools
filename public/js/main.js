@@ -1,3 +1,4 @@
+var formatRegExp = /%[sdj%]/g;
 var Tools = {
 
     getSshConfig: function(callback) {
@@ -16,12 +17,56 @@ var Tools = {
         });
     },
 
-    getSiteProfiles: function(callback) {
-        $.ajax({
-            url: '/getSiteProfiles',
-            dataType: 'json',
-            success: callback
+    /**
+     * Ripped from node's util library. Won't work in IE or something! Watch out!
+     *
+     * @param ctor
+     * @param superCtor
+     */
+    inherits: function(ctor, superCtor) {
+        ctor.super_ = superCtor;
+        ctor.prototype = Object.create(superCtor.prototype, {
+            constructor: {
+                value: ctor,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            }
         });
+    },
+
+
+    format: function(f) {
+        if (typeof f !== 'string') {
+            var objects = [];
+            for (var i = 0; i < arguments.length; i++) {
+                objects.push(inspect(arguments[i]));
+            }
+            return objects.join(' ');
+        }
+
+        var i = 1;
+        var args = arguments;
+        var len = args.length;
+        var str = String(f).replace(formatRegExp, function(x) {
+            if (x === '%%') return '%';
+            if (i >= len) return x;
+            switch (x) {
+                case '%s': return String(args[i++]);
+                case '%d': return Number(args[i++]);
+                case '%j': return JSON.stringify(args[i++]);
+                default:
+                    return x;
+            }
+        });
+        for (var x = args[i]; i < len; x = args[++i]) {
+            if (x === null || typeof x !== 'object') {
+                str += ' ' + x;
+            } else {
+                str += ' ' + inspect(x);
+            }
+        }
+        return str;
     },
 
     getSiteProfilesSelect: function(callback) {

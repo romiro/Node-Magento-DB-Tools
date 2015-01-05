@@ -5,8 +5,12 @@ var config = require('../config');
 var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
 var siteProfiles = require('../lib/site-profiles');
+var sqliteDb = require('../db');
 
 var dbRoutes = require('./database');
+
+
+sqliteDb.connect();
 
 function Routes() {}
 
@@ -38,16 +42,27 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
+    webApp.get('/clients', function(req, resp){
+        sqliteDb.Client.getAll(function(rows){
+
+            resp.render('clients', {rows:rows});
+        });
+    });
+
+    webApp.get('/servers', function(req, resp){
+        resp.render('servers');
+    });
+
     //Site Profiles
     webApp.get('/site-profiles', function(req, resp){
         resp.render('site-profiles');
     });
 
-    webApp.get('/getSiteProfiles', function(req, resp){
+    webApp.get('/getProfiles', function(req, resp){
         resp.json(siteProfiles.getAll());
     });
 
-    webApp.post('/saveSiteProfile', function(req, resp){
+    webApp.post('/saveProfile', function(req, resp){
         var sshEntry = SSHConfig.getHostByName(req.body['ssh-config-name']);
         var key = req.body['key'] ? req.body['key'] : null;
         var data = {
@@ -62,7 +77,7 @@ Routes.prototype.use = function (webApp) {
         resp.end();
     });
 
-    webApp.post('/deleteSiteProfile', function(req, resp){
+    webApp.post('/deleteProfile', function(req, resp){
         var key = req.body['key'];
         try {
             siteProfiles.remove(key);
