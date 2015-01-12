@@ -106,12 +106,41 @@ describe('sqlite database', function(){
 
     describe('Model functionality', function(){
 
-        it('Should get all client records without error', function(done){
+        it('Should insert record using method without error, and check that lastId is 1', function(done){
             var db = sqliteDb;
-            var records = db.Client.getAll(function(records){
-                console.log(records);
+            db.Client.insert({name: 'Chrome Industries', client_code: 'cbs'}, function(lastId){
+                expect(lastId).to.equal(1);
                 done();
             });
+        });
+
+        it('Should get all client records without error, and record length should be 1', function(done){
+            var db = sqliteDb;
+            db.Client.getAll(function(records){
+                expect(records).to.be.an.instanceof(Array);
+                expect(records.length).to.equal(1);
+                done();
+            });
+        });
+
+        it('Should insert a second record without error, and check that lastId is 2', function(done){
+            var db = sqliteDb;
+            db.Client.insert({name: 'Speck Products', client_code: 'spk'}, function(lastId){
+                expect(lastId).to.equal(2);
+                done();
+            });
+        });
+
+        it('Should update first record with a new client_code without error', function(done){
+            var db = sqliteDb;
+            db.Client.update({id: 1, client_code: 'chr'}, function(numChanges){
+                expect(numChanges).to.equal(1);
+                done();
+            });
+        });
+
+        it('Should get a single record and verify the update has occurred', function(done){
+
         });
     });
 

@@ -24,6 +24,7 @@ var DatabaseView = Object.subClass({
 
     setupEvents: function() {
         var self = this;
+
         //Save button
         this.$container.on('click', '.save-button', function(event){
             var $inputContainer = $(event.target).parents('.panel-primary');
