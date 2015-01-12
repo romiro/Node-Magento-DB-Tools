@@ -29,9 +29,8 @@ To see utilize the .map file in your browser, run this from project root: cd pub
 
 
 ### Notes
-* ~~Currently the node server tunnel aspect doesn't have any communication with the web app, it's in proof of concept mode now~~
+* App should be fully functional all the way through, using the current HEAD of master branch (1/12/15)
 * The tool available on the root page is fully functional and should be useful in assisting with remote database dumps
-* The automatic dump aspect is currently in development. Do not expect it to work.
 
 
 ### Description
@@ -49,49 +48,29 @@ To see utilize the .map file in your browser, run this from project root: cd pub
 
 
 ### TODO
-* MySQL command generator (existing, currently called "Home")
-    * Add ability to use existing site profile to get the contents of a local.xml
-
-* Configuration Options
-    * ~~Download path in user's filesystem for SCP downloads of database dumps~~
-    * Refactor config.js to use the json-store class instead
-        * Save values directly to file when "save" is pressed on frontend
 
 * Site Profile system
-    * ~~Has own page for administration CRUD~~ ✔
-    * Create and store profiles for client sites with the following data:
-        * ~~Relevant SSH login credentials pulled from .ssh/config~~ ✔
-        * ~~System path of production environment on SSH server~~ ✔
-        * ~~Flag for whether or not to use private key or a stored password for authentication~~ ✔
-            * ~~Automatically is set to private key when a .ssh/config entry is used~~ ✔
-    * Store information gathered from SSH config file directly into the site profile to make data more portable
+    * Currently undergoing massive overhaul into a 3 table sqlite data structure, separating Client, Server, and Profile concepts
         
 * DB Tool
-    * ~~Add --skip-lock-tables and --single-transaction to dump command as to not lock tables~~
-    * Running of DB sanitization commands through SSH
-        * New page, using elements from data sanitization view ✔
-            * ~~Option: Either full-dump mode or selectively using certain tables~~ ✔
-            * ~~Option: Database table checkboxes for ignore-table params~~ ✔
-            * ~~Option: Download file via scp from server after creation~~ ✔
-        * Connect to SSH server using site profile
-            * ~~Find local.xml using system path defined in system profile~~ ✔
-            * ~~Extract DB information from &lt;resources> node of local.xml~~ ✔
-            * ~~Use same JS functions as frontend page to create mysqldump commands~~ ✔
-            * ~~Run mysqldump commands as defined with user request~~ ✔
-            * If chosen, run scp command from local SSH to grab file from server into defined download directory
-                * Also consider straight piping of data with connection instead of reliance on scp command ✔
-                * SCP may be the final answer as some issues have developed with the straight piping method currently implemented
-    * Connection Test
-        * ~~Dry run of all of the above steps for the connection and running of mysqldump~~ ✔
-            * ~~Currently "Test" and "Run" perform the same actions. Needs refactored that testing just performs tests.~~ ✔
-    * Fixes / Changes
-        * Store information gathered from SSH config file directly into the site profile to make data more portable
+    * After site profile refactor, DB tool will need its data endpoints changed to match the refactoring
+
+* Web Frontend
+    * Client
+        * Route function, related template file
+        * Mapped list, add, delete to frontend display and js
+    * Server
+        * Route function, related template file
+        * Mapped list, add, delete to frontend display and js
+    * Profile
+        * Route function, related template file
+        * Mapped list, add, delete to frontend display and js
+    * Core frontend JS
+        * Super object to handle generic rendering of all three models
 
 * Command Line Access
-    * Refactor database dump module to emit events when complete instead of using resp.json to end request
-    * Completely detatch web application aspect from the dump module
-    * Implement CLI access through app.js (?), giving ability to run a site profile and perform same as the web app
-
+    * Phase 1 DONE!
+    
 * Local database import and making dev-ready
     * Import downloaded mysqldump file into local, temporary, database
     * After import, connect to local database server and temporary database
