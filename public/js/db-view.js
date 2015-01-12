@@ -97,6 +97,10 @@ var DatabaseView = Object.subClass({
 
             self.$container.append($record);
         });
+
+        //Custom event to hook into any additional rendering or fixups from default
+        // Listen via container.on('afterRender', function ...
+        self.$container.trigger('afterRender', {data:this.data});
     },
 
     createAddBlock: function() {
