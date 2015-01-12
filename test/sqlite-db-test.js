@@ -104,7 +104,7 @@ describe('sqlite database', function(){
     });
 
 
-    describe('Model functionality', function(){
+    describe('Model API functionality', function(){
 
         it('Should insert record using method without error, and check that lastId is 1', function(done){
             var db = sqliteDb;
@@ -139,8 +139,21 @@ describe('sqlite database', function(){
             });
         });
 
-        it('Should get a single record and verify the update has occurred', function(done){
+        it('Should get a single record to verify above update has occurred', function(done){
+            var db = sqliteDb;
+            db.Client.getBy('id', 1, function(rows){
+                expect(rows.length).to.equal(1);
+                expect(rows[0]['client_code']).to.equal('chr');
+                done();
+            });
+        });
 
+        it('Should delete a record without error', function(done){
+            var db = sqliteDb;
+            db.Client.deleteBy('id', 2, function(numChanges){
+                expect(numChanges).to.equal(1);
+                done();
+            });
         });
     });
 
