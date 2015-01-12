@@ -1,18 +1,21 @@
 <% layout('layout') %>
-<% script('/js/site-profiles.js') %>
 
-<div id="site-profiles">
+<% script('/js/db-view.js') %>
+<% script('/js/profiles.js') %>
+
+
+<div id="site-profiles" class="database-view">
 
 </div>
 
-<div id="profile-template">
+<div id="template" class="profile-template">
     <div class="panel panel-primary">
         <div class="panel-body">
             <form>
                 <input type="hidden" name="key" />
                 <div class="form-group">
                     <label for="profile-name">Profile Name</label>
-                    <input type="text" class="form-control" name="profile-name" placeholder="Profile Name" />
+                    <input type="text" class="form-control name" name="profile-name" placeholder="Profile Name" />
                 </div>
 
                 <div class="form-group ssh-config">
@@ -30,6 +33,6 @@
 <script>
 
 $(function(){
-    var siteProfiles = new SiteProfiles();
+    var siteProfiles = new Profiles();
 });
 </script>

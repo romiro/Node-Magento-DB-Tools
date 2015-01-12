@@ -5,8 +5,12 @@ var config = require('../config');
 var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
 var siteProfiles = require('../lib/site-profiles');
+var sqliteDb = require('../db');
 
 var dbRoutes = require('./database');
+
+
+sqliteDb.connect();
 
 function Routes() {}
 
@@ -38,16 +42,48 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
-    //Site Profiles
-    webApp.get('/site-profiles', function(req, resp){
-        resp.render('site-profiles');
+    webApp.get('/clients', function(req, resp){
+        resp.render('clients');
     });
 
-    webApp.get('/getSiteProfiles', function(req, resp){
+    webApp.get('/Clients/getAll', function(req, resp){
+        sqliteDb.Client.getAll(function(data){
+            resp.json(data);
+        });
+    });
+
+    webApp.post('/Clients/save', function(req, resp){
+        var params = req.body;
+        if (params.id) {
+            sqliteDb.Client.update(params, function(){
+                resp.json({});
+            });
+        }
+        else {
+            sqliteDb.Client.insert(params, function(lastId){
+                resp.end();
+            });
+        }
+    });
+
+    webApp.post('/Clients/delete', function(req, resp){
+
+    });
+
+    webApp.get('/servers', function(req, resp){
+        resp.render('servers');
+    });
+
+    //Site Profiles
+    webApp.get('/profiles', function(req, resp){
+        resp.render('profiles');
+    });
+
+    webApp.get('/Profiles/getAll', function(req, resp){
         resp.json(siteProfiles.getAll());
     });
 
-    webApp.post('/saveSiteProfile', function(req, resp){
+    webApp.post('/Profiles/save', function(req, resp){
         var sshEntry = SSHConfig.getHostByName(req.body['ssh-config-name']);
         var key = req.body['key'] ? req.body['key'] : null;
         var data = {
@@ -62,7 +98,7 @@ Routes.prototype.use = function (webApp) {
         resp.end();
     });
 
-    webApp.post('/deleteSiteProfile', function(req, resp){
+    webApp.post('/Profiles/delete', function(req, resp){
         var key = req.body['key'];
         try {
             siteProfiles.remove(key);

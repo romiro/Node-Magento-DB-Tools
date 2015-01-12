@@ -1,3 +1,4 @@
+var formatRegExp = /%[sdj%]/g;
 var Tools = {
 
     getSshConfig: function(callback) {
@@ -16,12 +17,56 @@ var Tools = {
         });
     },
 
-    getSiteProfiles: function(callback) {
-        $.ajax({
-            url: '/getSiteProfiles',
-            dataType: 'json',
-            success: callback
+    /**
+     * Ripped from node's util library. Won't work in IE or something! Watch out!
+     *
+     * @param ctor
+     * @param superCtor
+     */
+    //inherits: function(ctor, superCtor) {
+    //    ctor.super_ = superCtor;
+    //    ctor.prototype = Object.create(superCtor.prototype, {
+    //        constructor: {
+    //            value: ctor,
+    //            enumerable: false,
+    //            writable: true,
+    //            configurable: true
+    //        }
+    //    });
+    //},
+
+
+    format: function(f) {
+        if (typeof f !== 'string') {
+            var objects = [];
+            for (var i = 0; i < arguments.length; i++) {
+                objects.push(inspect(arguments[i]));
+            }
+            return objects.join(' ');
+        }
+
+        var i = 1;
+        var args = arguments;
+        var len = args.length;
+        var str = String(f).replace(formatRegExp, function(x) {
+            if (x === '%%') return '%';
+            if (i >= len) return x;
+            switch (x) {
+                case '%s': return String(args[i++]);
+                case '%d': return Number(args[i++]);
+                case '%j': return JSON.stringify(args[i++]);
+                default:
+                    return x;
+            }
         });
+        for (var x = args[i]; i < len; x = args[++i]) {
+            if (x === null || typeof x !== 'object') {
+                str += ' ' + x;
+            } else {
+                str += ' ' + inspect(x);
+            }
+        }
+        return str;
     },
 
     getSiteProfilesSelect: function(callback) {
@@ -92,6 +137,44 @@ var Tools = {
     }
 
 };
+
+//Resig's subclass method
+(function () {
+    var initializing = false,
+        superPattern = /xyz/.test(function () {
+            xyz;
+        }) ? /\b_super\b/ : /.*/;
+
+    Object.subClass = function (properties) {
+        var _super = this.prototype;
+        initializing = true;
+        var proto = new this();
+        initializing = false;
+
+        for (var name in properties) {
+            proto[name] = typeof properties[name] == "function" && typeof _super[name] == "function" && superPattern.test(properties[name]) ? (function (name, fn) {
+                return function () {
+                    var tmp = this._super;
+                    this._super = _super[name];
+                    var ret = fn.apply(this, arguments);
+                    this._super = tmp;
+                    return ret;
+                };
+            })(name, properties[name]) : properties[name];
+        }
+
+        function Class() {
+            if (!initializing && this.init) {
+                this.init.apply(this, arguments);
+            }
+        }
+
+        Class.prototype = proto;
+        Class.constructor = Class;
+        Class.subClass = arguments.callee;
+        return Class;
+    };
+})();
 
 jQuery(
 function(){
