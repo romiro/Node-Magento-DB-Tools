@@ -20,7 +20,7 @@ function SqliteDb() {
 
 SqliteDb.prototype.connect = function(filepath) {
     if (typeof filepath === 'undefined') {
-        filepath = 'db/storage/test.sqlite';
+        filepath = 'db/storage/main.sqlite';
     }
     this.connection = new sqlite3.Database(filepath);
     this.connected = true;
