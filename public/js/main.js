@@ -1,40 +1,21 @@
 var formatRegExp = /%[sdj%]/g;
 var Tools = {
 
-    getSshConfig: function(callback) {
-        $.ajax({
-            url: '/getSshConfig',
-            dataType: 'json',
-            success: function(data) {
-                var out = {};
-                for (var key in data) {
-                    if (data.hasOwnProperty(key)) {
-                        out[data[key]['label']] = data[key];
-                    }
-                }
-                callback(out);
-            }
-        });
-    },
-
-    /**
-     * Ripped from node's util library. Won't work in IE or something! Watch out!
-     *
-     * @param ctor
-     * @param superCtor
-     */
-    //inherits: function(ctor, superCtor) {
-    //    ctor.super_ = superCtor;
-    //    ctor.prototype = Object.create(superCtor.prototype, {
-    //        constructor: {
-    //            value: ctor,
-    //            enumerable: false,
-    //            writable: true,
-    //            configurable: true
+    //getSshConfig: function(callback) {
+    //    $.ajax({
+    //        url: '/getSshConfig',
+    //        dataType: 'json',
+    //        success: function(data) {
+    //            var out = {};
+    //            for (var key in data) {
+    //                if (data.hasOwnProperty(key)) {
+    //                    out[data[key]['label']] = data[key];
+    //                }
+    //            }
+    //            callback(out);
     //        }
     //    });
     //},
-
 
     format: function(f) {
         if (typeof f !== 'string') {
@@ -141,10 +122,11 @@ var Tools = {
     hideWait: function() {
         $('body').removeClass('wait');
     }
-
 };
 
-//Resig's subclass method
+
+
+//Resig's subclass method, extends native Object with new method
 (function () {
     var initializing = false,
         superPattern = /xyz/.test(function () {

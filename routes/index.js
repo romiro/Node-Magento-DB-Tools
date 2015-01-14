@@ -42,6 +42,10 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
+
+    /**
+     * Client Routes
+     */
     webApp.get('/clients', function(req, resp){
         resp.render('clients');
     });
@@ -77,6 +81,10 @@ Routes.prototype.use = function (webApp) {
         });
     });
 
+
+    /**
+     * Server Routes
+     */
     webApp.get('/servers', function(req, resp){
         resp.render('servers');
     });
@@ -87,7 +95,27 @@ Routes.prototype.use = function (webApp) {
         });
     });
 
-    //Site Profiles
+    webApp.post('/Servers/save', function(req, resp){
+        var params = req.body;
+        var sshEntry = SSHConfig.getHostByName(params['ssh_config']);
+        params['ssh_host'] = sshEntry['host'];
+        params['ssh_username'] = sshEntry['user'];
+        if (params.id) {
+            sqliteDb.Server.update(params, function(){
+                resp.json({});
+            });
+        }
+        else {
+            sqliteDb.Server.insert(params, function(lastId){
+                resp.end();
+            });
+        }
+    });
+
+
+    /**
+     * Profile Routes
+     */
     webApp.get('/profiles', function(req, resp){
         resp.render('profiles');
     });
@@ -128,22 +156,6 @@ Routes.prototype.use = function (webApp) {
         resp.json(SSHConfig.getHosts());
     }.bind(webApp));
 
-    //Testing action
-    webApp.get('/connectSSH', function(req, resp){
-        var conn = new SSHConn();
-        conn.connect(config.ssh, function(){
-            conn.connection.exec('who', function(err, stream){
-                var out = '';
-                stream.on('data', function(data, extended){
-                    out += data;
-                });
-                stream.on('exit', function(){
-                    resp.end(out);
-                    conn.connection.end();
-                })
-            });
-        });
-    });
 };
 
 module.exports = new Routes();
