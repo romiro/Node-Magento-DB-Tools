@@ -6,8 +6,6 @@ var DatabaseView = Object.subClass({
         this.data = null;
         this.singularName = '';
         this.pluralName = '';
-
-        var self = this;
     },
 
     getData: function(callback) {
@@ -49,12 +47,12 @@ var DatabaseView = Object.subClass({
             if (!window.confirm(Tools.format('Do you wish to delete %s "%s"?', self.singularName, name))) {
                 return false;
             }
-            var key = $inputContainer.find(':input[name=key]').val();
+            var id = $inputContainer.find(':input[name=id]').val();
 
             $.ajax({
                 url: Tools.format('/%s/delete', self.pluralName),
                 type: 'POST',
-                data: {key: key},
+                data: {id: id},
                 success: function() {
                     document.location = document.location;
                 }
@@ -88,7 +86,7 @@ var DatabaseView = Object.subClass({
             //$profile.find(':input[name=ssh-config-name]').val(record['sshConfigName']);
             //$profile.find(':input[name=site-path]').val(record['sitePath']);
 
-            $record.prepend($('<div class="panel-heading"></div>').text(record['name']));
+            $record.prepend($('<div class="panel-heading"></div>').text(record[self.singularName.toLowerCase() + '_name']));
 
             //Save button
             $record.find('.panel-body').append('<div class="buttons"><button type="button" class="save-button btn btn-primary">Save</button></div>');

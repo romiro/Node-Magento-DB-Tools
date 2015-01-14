@@ -67,7 +67,14 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.post('/Clients/delete', function(req, resp){
-
+        var id = req.body['id'];
+        if (!id) {
+            resp.end('Id is not set');
+            return false;
+        }
+        sqliteDb.Client.deleteBy('id', id, function(numChanges){
+            resp.end();
+        });
     });
 
     webApp.get('/servers', function(req, resp){

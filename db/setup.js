@@ -12,7 +12,7 @@ module.exports = function(callback) {
         db.run('CREATE TABLE Server ('+
         'id INTEGER PRIMARY KEY ASC,'+
         'client_id INTEGER,'+
-        'client_name TEXT,'+
+        'server_name TEXT,'+
         'ssh_host TEXT,'+
         'ssh_username TEXT'+
         ');');
@@ -20,7 +20,7 @@ module.exports = function(callback) {
         db.run('CREATE TABLE Profile ('+
         'id INTEGER PRIMARY KEY ASC,'+
         'server_id INTEGER,'+
-        'server_name TEXT,'+
+        'profile_name TEXT,'+
         'magento_path TEXT,'+
         'excluded_tables TEXT'+
         ');', function(){
