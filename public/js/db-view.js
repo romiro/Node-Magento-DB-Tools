@@ -151,7 +151,10 @@ var Servers = DatabaseView.subClass({
         this.getData(function(data){
             self.getDataFrom('clients', function(data){
                 self.clientData = data;
-                self.finish();
+                self.getDataFrom('SshConfig', function(data){
+                    self.sshConfigData = data;
+                    self.finish();
+                });
             });
         });
     },
@@ -174,6 +177,15 @@ var Servers = DatabaseView.subClass({
         });
 
         //Render select box for SSH Config data for the "New" panel only
+        var $newPanel = this.$container.find('.panel.add .panel-body');
+        $newPanel.find('.form-group.ssh_host, .form-group.ssh_username').remove();
+        var $sshContainer = $newPanel.find('.form-group').first().clone().empty();
+        $sshContainer.append('<label for="ssh_config">SSH Config Setting</label>');
+        var $sshSelect = $('<select name="ssh_config" class="form-control ssh_config"></select>').appendTo($sshContainer);
+        $.each(this.sshConfigData, function(i, val){
+            $sshSelect.append(Tools.format('<option value="%s">%s</option>', val['label'], val['label']));
+        });
+        $sshContainer.insertBefore($newPanel.find('div.buttons'));
 
     }
 });

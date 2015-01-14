@@ -124,7 +124,7 @@ Routes.prototype.use = function (webApp) {
 
     dbRoutes.use(webApp);
 
-    webApp.get('/getSshConfig', function(req, resp){
+    webApp.get(/\/getSshConfig|\/SshConfig\/getAll/, function(req, resp){
         resp.json(SSHConfig.getHosts());
     }.bind(webApp));
 
