@@ -43,31 +43,33 @@ describe('sqlite database', function(){
             var db = sqliteDb;
             db.connect(dbFile);
             db.connection.serialize(function(){
-                db.connection.run('CREATE TABLE Client ("id" INTEGER PRIMARY KEY ASC, "client_code" TEXT, "name" TEXT);');
 
-                db.connection.run('CREATE TABLE Server ('+
+                db.run('CREATE TABLE Client ("id" INTEGER PRIMARY KEY ASC, "client_code" TEXT, "client_name" TEXT);');
+
+                db.run('CREATE TABLE Server ('+
                 'id INTEGER PRIMARY KEY ASC,'+
                 'client_id INTEGER,'+
-                'name TEXT,'+
+                'server_name TEXT,'+
                 'ssh_host TEXT,'+
                 'ssh_username TEXT'+
                 ');');
 
-                db.connection.run('CREATE TABLE Profile ('+
+                db.run('CREATE TABLE Profile ('+
                 'id INTEGER PRIMARY KEY ASC,'+
                 'server_id INTEGER,'+
-                'name TEXT,'+
+                'profile_name TEXT,'+
                 'magento_path TEXT,'+
                 'excluded_tables TEXT'+
-                ');');
-                done();
+                ');', function(){
+                    done();
+                });
             });
         });
 
         it('Should insert rows into the Client table without error', function(done){
             var db = sqliteDb;
 
-            db.run('INSERT INTO Client (client_code, name) VALUES ("spk", "Speck")', function(err){
+            db.run('INSERT INTO Client (client_code, client_name) VALUES ("spk", "Speck")', function(err){
                 if (err) throw err;
                 done();
             });
@@ -76,19 +78,19 @@ describe('sqlite database', function(){
         it('Should retrieve the inserted row and validate using raw query', function(done){
             var db = sqliteDb;
 
-            db.connection.get('SELECT name FROM Client WHERE client_code="spk"', function(err, row){
+            db.connection.get('SELECT client_name FROM Client WHERE client_code="spk"', function(err, row){
                 if (err) throw err;
-                expect(row.name).to.equal('Speck');
+                expect(row.client_name).to.equal('Speck');
                 done();
             });
         });
 
         it('Should retrieve the inserted row using prepared statement', function(done){
             var db = sqliteDb;
-            var stmt = db.connection.prepare('SELECT name FROM Client WHERE client_code=?');
+            var stmt = db.connection.prepare('SELECT client_name FROM Client WHERE client_code=?');
             stmt.get('spk', function(err, row){
                 if (err) throw err;
-                expect(row.name).to.equal('Speck');
+                expect(row.client_name).to.equal('Speck');
                 done();
             });
         });
@@ -108,7 +110,7 @@ describe('sqlite database', function(){
 
         it('Should insert record using method without error, and check that lastId is 1', function(done){
             var db = sqliteDb;
-            db.Client.insert({name: 'Chrome Industries', client_code: 'cbs'}, function(lastId){
+            db.Client.insert({client_name: 'Chrome Industries', client_code: 'cbs'}, function(lastId){
                 expect(lastId).to.equal(1);
                 done();
             });
@@ -125,11 +127,12 @@ describe('sqlite database', function(){
 
         it('Should insert a second record without error, and check that lastId is 2', function(done){
             var db = sqliteDb;
-            db.Client.insert({name: 'Speck Products', client_code: 'spk'}, function(lastId){
+            db.Client.insert({client_name: 'Speck Products', client_code: 'spk'}, function(lastId){
                 expect(lastId).to.equal(2);
                 done();
             });
         });
+
 
         it('Should update first record with a new client_code without error', function(done){
             var db = sqliteDb;
@@ -152,6 +155,54 @@ describe('sqlite database', function(){
             var db = sqliteDb;
             db.Client.deleteBy('id', 2, function(numChanges){
                 expect(numChanges).to.equal(1);
+                done();
+            });
+        });
+
+        it('Should insert a Server record to join with remaining Client', function(done){
+            var db = sqliteDb;
+            db.Server.insert({
+                    client_id: 1,
+                    server_name: 'web01',
+                    ssh_host: '127.0.0.1',
+                    ssh_username: 'blueacorn'
+                },
+                function(lastId){
+                    expect(lastId).to.equal(1);
+                    done();
+                }
+            );
+        });
+
+        it('Should get the Server record joined with the client data', function(done){
+            var db = sqliteDb;
+            db.Server.getByJoined('Server.id', 1, function(rows){
+                expect(rows[0].client_code).to.equal('chr');
+                done();
+            });
+        });
+
+        it('Should insert a Profile record to join with the Server record', function(done){
+            var db = sqliteDb;
+            db.Profile.insert({
+                    server_id: 1,
+                    profile_name: 'Chrome Production',
+                    magento_path: '/var/www/vhosts/chromeindustries.com/',
+                    excluded_tables: ''
+                },
+                function(lastId){
+                    expect(lastId).to.equal(1);
+                    done();
+                }
+            );
+        });
+
+        it('Should get the Profile record joined with both Server and Client data', function(done){
+            var db = sqliteDb;
+            db.Profile.getByJoined('Profile.id', 1, function(rows){
+                expect(rows[0].client_name).to.equal('Chrome Industries');
+                expect(rows[0].server_name).to.equal('web01');
+                expect(rows[0].magento_path).to.equal('/var/www/vhosts/chromeindustries.com/');
                 done();
             });
         });
