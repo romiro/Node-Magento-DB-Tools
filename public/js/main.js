@@ -69,6 +69,12 @@ var Tools = {
         return str;
     },
 
+    capitalize: function(str) {
+        var parts = str.split('');
+        parts[0] = parts[0].toUpperCase();
+        return parts.join('');
+    },
+
     getSiteProfilesSelect: function(callback) {
         Tools.getSiteProfiles(function(data){
             var $select = $('<select class="form-control" name="site-profile"></select>');

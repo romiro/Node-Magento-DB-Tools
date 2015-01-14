@@ -20,6 +20,18 @@ var DatabaseView = Object.subClass({
         });
     },
 
+    getDataFrom: function(type, callback) {
+        var self = this;
+        type = Tools.capitalize(type);
+        $.ajax({
+            url: Tools.format('/%s/getAll', type),
+            dataType: 'json',
+            success: function(data){
+                callback(data);
+            }
+        });
+    },
+
     setupEvents: function() {
         var self = this;
 
@@ -97,9 +109,6 @@ var DatabaseView = Object.subClass({
             self.$container.append($record);
         });
 
-        //Custom event to hook into any additional rendering or fixups from default
-        // Listen via container.on('afterRender', function ...
-        self.$container.trigger('afterRender', {data:this.data});
     },
 
     createAddBlock: function() {
@@ -113,5 +122,58 @@ var DatabaseView = Object.subClass({
         this.createAddBlock();
         this.render();
         this.setupEvents();
+    }
+});
+
+
+var Clients = DatabaseView.subClass({
+    init: function() {
+        this._super();
+
+        this.singularName = 'Client';
+        this.pluralName = 'Clients';
+
+        var self = this;
+        this.getData(function(data){
+            self.finish();
+        });
+    }
+});
+
+var Servers = DatabaseView.subClass({
+    init: function() {
+        this._super();
+
+        this.singularName = 'Server';
+        this.pluralName = 'Servers';
+        var self = this;
+
+        this.getData(function(data){
+            self.getDataFrom('clients', function(data){
+                self.clientData = data;
+                self.finish();
+            });
+        });
+    },
+
+    render: function() {
+        this._super();
+        var self = this;
+
+        //Change headings to include client name
+        this.$container.find('.panel.edit .panel-heading').each(function(i){
+            $(this).text(self.data[i].client_name + " - " + $(this).text());
+        });
+
+        //Render select boxes for Client data
+        this.$container.find('.panel-body select.client_id').each(function(i){
+            var $select = $(this);
+            $.each(self.clientData, function(i, v){
+                $select.append(Tools.format('<option value="%s">%s</option>', v['id'], v['client_name']));
+            });
+        });
+
+        //Render select box for SSH Config data for the "New" panel only
+
     }
 });

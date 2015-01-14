@@ -1,25 +1,40 @@
 <% layout('layout'); %>
 
 <% script('/js/db-view.js'); %>
-<% script('/js/clients.js'); %>
 
 
-<div id="clients" class="database-view"></div>
+<div id="servers" class="database-view"></div>
 
-<div id="template" class="client-template">
+<div id="template" class="server-template">
     <div class="panel panel-primary">
         <div class="panel-body">
             <form>
                 <input type="hidden" name="id" />
                 <div class="form-group">
-                    <label for="name">Client Name</label>
-                    <input type="text" class="form-control name" name="client_name" placeholder="Client Name" />
+                    <label for="name">Server Name</label>
+                    <input type="text" class="form-control name" name="server_name" placeholder="Server Name" />
                 </div>
 
                 <div class="form-group">
-                    <label for="client_code">Client Code</label>
-                    <input type="text" class="form-control" name="client_code" placeholder="Two to three letter client code" />
+                    <label for="client_id">Client</label>
+                    <select name="client_id" class="form-control client_id"></select>
                 </div>
+
+                <div class="form-group">
+                    <label for="name">SSH Host</label>
+                    <input type="text" class="form-control name" name="ssh_host" placeholder="SSH Host" />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">SSH Username</label>
+                    <input type="text" class="form-control name" name="ssh_username" placeholder="SSH Username" />
+                </div>
+
+                <!--
+                <div class="form-group ssh-config">
+                    <label for="ssh-config-name">SSH Config Name for Server</label>
+                </div>
+                -->
             </form>
         </div>
     </div>
@@ -27,6 +42,6 @@
 
 <script>
     $(function(){
-        var clients = new Clients();
+        var clients = new Servers();
     });
 </script>

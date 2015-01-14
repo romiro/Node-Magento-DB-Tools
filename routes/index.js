@@ -81,6 +81,12 @@ Routes.prototype.use = function (webApp) {
         resp.render('servers');
     });
 
+    webApp.get('/Servers/getAll', function(req, resp){
+        sqliteDb.Server.getAllJoined(function(data){
+            resp.json(data);
+        });
+    });
+
     //Site Profiles
     webApp.get('/profiles', function(req, resp){
         resp.render('profiles');

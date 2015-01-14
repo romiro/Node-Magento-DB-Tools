@@ -25,4 +25,14 @@ Server.prototype.getByJoined = function(column, search, callback){
     });
 };
 
+Server.prototype.getAllJoined = function(callback){
+    var conn = this.db.connection;
+    var statement = 'SELECT * FROM Server INNER JOIN Client ON Server.client_id = Client.id';
+
+    conn.all(statement, function(err, rows){
+        if (err) throw err;
+        callback(rows);
+    });
+};
+
 module.exports = Server;

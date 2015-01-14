@@ -182,6 +182,14 @@ describe('sqlite database', function(){
             });
         });
 
+        it('Should get all Server records, joined', function(done){
+            var db = sqliteDb;
+            db.Server.getAllJoined(function(rows){
+                expect(rows[0].client_code).to.equal('chr');
+                done();
+            });
+        });
+
         it('Should insert a Profile record to join with the Server record', function(done){
             var db = sqliteDb;
             db.Profile.insert({
