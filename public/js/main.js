@@ -1,22 +1,6 @@
 var formatRegExp = /%[sdj%]/g;
 var Tools = {
 
-    //getSshConfig: function(callback) {
-    //    $.ajax({
-    //        url: '/getSshConfig',
-    //        dataType: 'json',
-    //        success: function(data) {
-    //            var out = {};
-    //            for (var key in data) {
-    //                if (data.hasOwnProperty(key)) {
-    //                    out[data[key]['label']] = data[key];
-    //                }
-    //            }
-    //            callback(out);
-    //        }
-    //    });
-    //},
-
     format: function(f) {
         if (typeof f !== 'string') {
             var objects = [];
@@ -166,5 +150,5 @@ var Tools = {
 
 jQuery(
 function(){
-    var navigation = new Navigation();
+    new Navigation();
 });

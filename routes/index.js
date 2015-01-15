@@ -134,7 +134,9 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.get('/Profiles/getAll', function(req, resp){
-        resp.json(siteProfiles.getAll());
+        sqliteDb.Profile.getAllJoined(function(data){
+            resp.json(data);
+        });
     });
 
     webApp.post('/Profiles/save', function(req, resp){

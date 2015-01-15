@@ -25,4 +25,14 @@ Profile.prototype.getByJoined = function(column, search, callback){
     });
 };
 
+Profile.prototype.getAllJoined = function(callback){
+    var conn = this.db.connection;
+    var statement = 'SELECT * FROM Profile INNER JOIN Server ON Profile.server_id = Server.id INNER JOIN Client ON Server.client_id = Client.id';
+
+    conn.all(statement, function(err, rows){
+        if (err) throw err;
+        callback(rows);
+    });
+};
+
 module.exports = Profile;

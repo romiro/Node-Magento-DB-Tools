@@ -214,6 +214,14 @@ describe('sqlite database', function(){
                 done();
             });
         });
+
+        it('Should get all Profile records, joined', function(done){
+            var db = sqliteDb;
+            db.Profile.getAllJoined(function(rows){
+                expect(rows[0].client_code).to.equal('chr');
+                done();
+            });
+        });
     });
 
 
