@@ -140,18 +140,32 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.post('/Profiles/save', function(req, resp){
-        var sshEntry = SSHConfig.getHostByName(req.body['ssh-config-name']);
-        var key = req.body['key'] ? req.body['key'] : null;
-        var data = {
-            profileName: req.body['profile-name'],
-            sitePath: req.body['site-path'],
-            sshConfigName: req.body['ssh-config-name'],
-            sshHost: sshEntry['host'],
-            sshUser: sshEntry['user']
-        };
-        siteProfiles.set(key, data);
-        siteProfiles.save();
-        resp.end();
+        var params = req.body;
+
+        if (params.id) {
+            sqliteDb.Profile.update(params, function(){
+                resp.json({});
+            });
+        }
+        else {
+            delete params['id'];
+            sqliteDb.Profile.insert(params, function(lastId){
+                resp.end();
+            });
+        }
+
+        //var sshEntry = SSHConfig.getHostByName(req.body['ssh-config-name']);
+        //var key = req.body['key'] ? req.body['key'] : null;
+        //var data = {
+        //    profileName: req.body['profile-name'],
+        //    sitePath: req.body['site-path'],
+        //    sshConfigName: req.body['ssh-config-name'],
+        //    sshHost: sshEntry['host'],
+        //    sshUser: sshEntry['user']
+        //};
+        //siteProfiles.set(key, data);
+        //siteProfiles.save();
+        //resp.end();
     });
 
     webApp.post('/Profiles/delete', function(req, resp){
@@ -171,7 +185,7 @@ Routes.prototype.use = function (webApp) {
         resp.json(SSHConfig.getHosts());
     }.bind(webApp));
 
-    webApp.get('/excludedTables/getAll', function(req, resp){
+    webApp.get('/ExcludedTables/getAll', function(req, resp){
         var tables = new JsonStore('excluded-tables').getAll();
         resp.json(tables);
     });
