@@ -64,6 +64,7 @@ Routes.prototype.use = function (webApp) {
             });
         }
         else {
+            delete params['id'];
             sqliteDb.Client.insert(params, function(lastId){
                 resp.end();
             });
@@ -100,18 +101,30 @@ Routes.prototype.use = function (webApp) {
         var sshEntry = SSHConfig.getHostByName(params['ssh_config']);
         params['ssh_host'] = sshEntry['host'];
         params['ssh_username'] = sshEntry['user'];
+        delete params['ssh_config'];
         if (params.id) {
             sqliteDb.Server.update(params, function(){
                 resp.json({});
             });
         }
         else {
+            delete params['id'];
             sqliteDb.Server.insert(params, function(lastId){
                 resp.end();
             });
         }
     });
 
+    webApp.post('/Servers/delete', function(req, resp){
+        var id = req.body['id'];
+        if (!id) {
+            resp.end('Id is not set');
+            return false;
+        }
+        sqliteDb.Server.deleteBy('id', id, function(numChanges){
+            resp.end();
+        });
+    });
 
     /**
      * Profile Routes

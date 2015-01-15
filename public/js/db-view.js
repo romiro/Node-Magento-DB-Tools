@@ -93,11 +93,6 @@ var DatabaseView = Object.subClass({
                 $record.find(Tools.format(':input[name=%s]', key)).val(val);
             });
 
-            //$profile.find(':input[name=key]').val(i);
-            //$profile.find(':input[name=profile-name]').val(record['profileName']);
-            //$profile.find(':input[name=ssh-config-name]').val(record['sshConfigName']);
-            //$profile.find(':input[name=site-path]').val(record['sitePath']);
-
             $record.prepend($('<div class="panel-heading"></div>').text(record[self.singularName.toLowerCase() + '_name']));
 
             //Save button
@@ -159,22 +154,27 @@ var Servers = DatabaseView.subClass({
         });
     },
 
-    render: function() {
-        this._super();
+    finish: function() {
         var self = this;
+        //Render select boxes for Client data
+        this.$template.find('.panel-body select.client_id').each(function(i){
+            var $select = $(this);
+            $.each(self.clientData, function(i, v){
+                $select.append(Tools.format('<option value="%s">%s</option>', v['id'], v['client_name']));
+            });
+        });
+        this._super();
+    },
+
+    render: function() {
+        var self = this;
+        this._super();
 
         //Change headings to include client name
         this.$container.find('.panel.edit .panel-heading').each(function(i){
             $(this).text(self.data[i].client_name + " - " + $(this).text());
         });
 
-        //Render select boxes for Client data
-        this.$container.find('.panel-body select.client_id').each(function(i){
-            var $select = $(this);
-            $.each(self.clientData, function(i, v){
-                $select.append(Tools.format('<option value="%s">%s</option>', v['id'], v['client_name']));
-            });
-        });
 
         //Render select box for SSH Config data for the "New" panel only
         var $newPanel = this.$container.find('.panel.add .panel-body');
