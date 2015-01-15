@@ -2,10 +2,10 @@
 
 var config = require('../config');
 
-var SSHConn = require('../lib/ssh-conn');
 var SSHConfig = require('../lib/ssh-config-reader');
 var siteProfiles = require('../lib/site-profiles');
 var sqliteDb = require('../db');
+var JsonStore = require('../lib/json-store');
 
 var dbRoutes = require('./database');
 
@@ -170,6 +170,11 @@ Routes.prototype.use = function (webApp) {
     webApp.get(/\/getSshConfig|\/SshConfig\/getAll/, function(req, resp){
         resp.json(SSHConfig.getHosts());
     }.bind(webApp));
+
+    webApp.get('/excludedTables/getAll', function(req, resp){
+        var tables = new JsonStore('excluded-tables').getAll();
+        resp.json(tables);
+    });
 
 };
 

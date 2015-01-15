@@ -85,6 +85,8 @@ var DatabaseView = Object.subClass({
         });
     },
 
+    beforeRender: function() {},
+
     render: function() {
         var self = this;
         $.each(this.data, function(i, record){
@@ -114,6 +116,7 @@ var DatabaseView = Object.subClass({
     },
 
     finish: function() {
+        this.beforeRender();
         this.createAddBlock();
         this.render();
         this.setupEvents();
@@ -154,7 +157,7 @@ var Servers = DatabaseView.subClass({
         });
     },
 
-    finish: function() {
+    beforeRender: function() {
         var self = this;
         //Render select boxes for Client data
         this.$template.find('.panel-body select.client_id').each(function(i){
@@ -199,18 +202,68 @@ var Profiles = DatabaseView.subClass({
         var self = this;
 
         this.getData(function(){
-            self.getDataFrom('SshConfig', function(data){
-                //Add SSH Config values to select, pulled from ajax json response
-                var $select = $('<select class="form-control" name="ssh-config-name"></select>');
-                $select.append('<option value="">Select an SSH Config entry...</option>');
-                for (var key in data) {
-                    if (data.hasOwnProperty(key)) {
-                        $select.append($('<option></option>').val(key).text(data[key]['label']));
-                    }
-                }
-                self.$template.find('.ssh-config').append($select);
-                self.finish();
+            self.getDataFrom('servers', function(data){
+                self.serverData = data;
+                self.getDataFrom('excludedTables', function(data){
+                    self.excludedTables = data;
+                    self.finish();
+                });
             });
+        });
+    },
+
+    beforeRender: function() {
+        var self = this;
+        //Render select boxes for Server data
+        this.$template.find('.panel-body select.server_id').each(function(i){
+            var $select = $(this);
+            $.each(self.serverData, function(i, v){
+                var text = Tools.format('%s - %s', v['client_name'], v['server_name']);
+                $select.append(Tools.format('<option value="%s">%s</option>', v['id'], text));
+            });
+        });
+        this._super();
+    },
+
+    setupTableCheckboxes: function() {
+        var tables = ['log_visitor_online', 'log_visitor_info', 'log_visitor', 'log_url_info', 'log_url', 'log_summary_type', 'log_summary', 'log_quote', 'log_customer', 'enterprise_customer_sales_flat_quote_address', 'enterprise_customer_sales_flat_quote', 'enterprise_customer_sales_flat_order_address', 'enterprise_customer_sales_flat_order', 'enterprise_logging_event', 'enterprise_logging_event_changes', 'sales_shipping_aggregated_order', 'sales_shipping_aggregated', 'sales_refunded_aggregated_order', 'sales_refunded_aggregated', 'sales_recurring_profile_order', 'sales_recurring_profile', 'sales_payment_transaction', 'sales_order_tax_item', 'sales_order_tax', 'sales_order_aggregated_updated', 'sales_order_aggregated_created', 'sales_invoiced_aggregated_order', 'sales_invoiced_aggregated', 'sales_flat_shipment_track', 'sales_flat_shipment_item', 'sales_flat_shipment_grid', 'sales_flat_shipment_comment', 'sales_flat_shipment', 'sales_flat_quote_shipping_rate', 'sales_flat_quote_payment', 'sales_flat_quote_item_option', 'sales_flat_quote_item', 'sales_flat_quote_address_item', 'sales_flat_quote_address', 'sales_flat_quote', 'sales_flat_order_status_history', 'sales_flat_order_payment', 'sales_flat_order_item', 'sales_flat_order_grid', 'sales_flat_order_address', 'sales_flat_order', 'sales_flat_invoice_item', 'sales_flat_invoice_grid', 'sales_flat_invoice_comment', 'sales_flat_invoice', 'sales_flat_creditmemo_item', 'sales_flat_creditmemo_grid', 'sales_flat_creditmemo_comment', 'sales_flat_creditmemo', 'sales_billing_agreement_order', 'sales_billing_agreement', 'sales_bestsellers_aggregated_yearly', 'sales_bestsellers_aggregated_monthly', 'sales_bestsellers_aggregated_daily', 'report_viewed_product_index', 'report_viewed_product_aggregated_yearly', 'report_viewed_product_aggregated_monthly', 'report_viewed_product_aggregated_daily', 'report_event', 'report_compared_product_index', 'customer_entity_varchar', 'customer_entity_text', 'customer_entity_int', 'customer_entity_decimal', 'customer_entity_datetime', 'customer_entity', 'customer_address_entity_varchar', 'customer_address_entity_text', 'customer_address_entity_int', 'customer_address_entity_decimal', 'customer_address_entity_datetime', 'customer_address_entity'];
+        var container = $('#table-checkboxes');
+        var len = tables.length;
+        for (var i = 0; i < len; i++) {
+            var $chkContainer = $('<div class="col-md-6"></div>').append('<div class="checkbox"></div>');
+            var label = $('<label></label>')
+                .text(tables[i])
+                .attr('for', tables[i])
+                .appendTo($chkContainer.children());
+            var checkbox = $('<input type="checkbox" />')
+                .attr('name', 'tables')
+                .attr('id', tables[i])
+                .prop('checked', true)
+                .val(tables[i])
+                .appendTo(label);
+            container.append($chkContainer);
+        }
+        $('<div style="clear:both"></div>').appendTo(container);
+
+        //Checkbox toggles for tables
+        var $tableControls = $('#table-controls');
+        $tableControls.on('click', '.select-all', function(){
+            $('#table-checkboxes').find('input[type=checkbox]').prop('checked', true);
+        });
+        $tableControls.on('click', '.select-none', function(){
+            $('#table-checkboxes').find('input[type=checkbox]').prop('checked', false);
+        });
+
+        $('#tables-toggle').on('click', function(){
+            var $tablesContent = $('#tables-content');
+            if (!$tablesContent.hasClass('show')) {
+                $tablesContent.addClass('show').slideDown();
+                $(this).find('span').removeClass('glyphicon-expand').addClass('glyphicon-collapse-down');
+            }
+            else {
+                $tablesContent.removeClass('show').slideUp();
+                $(this).find('span').removeClass('glyphicon-collapse-down').addClass('glyphicon-expand');
+            }
         });
     }
 });
