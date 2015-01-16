@@ -234,11 +234,22 @@ var Profiles = DatabaseView.subClass({
         this.$container.find('.panel.edit .panel-heading').each(function(i){
             $(this).text(Tools.format('%s - %s - %s', self.data[i].client_name, self.data[i].server_name, $(this).text()));
         });
+
+        //Add excluded tables checkboxes to all
+        var $tablesTemplate;
+        this.$container.find('.panel-body').each(function(i){
+            $tablesTemplate = $('#table-checkboxes-container').clone(true);
+            var $form = $('<div class="form-group"><label>Excluded Tables</label></div>').append($tablesTemplate);
+            $(this).find('div.form-group').last().after($form);
+        });
     },
 
+    /**
+     * Sets up table checkboxes for the template, before cloning and attaching to each form
+     */
     setupTableCheckboxes: function() {
         var tables = this.excludedTables;
-        var container = $('#table-checkboxes');
+        var container = $('.table-checkboxes');
         var len = tables.length;
 
         for (var i = 0; i < len; i++) {
@@ -258,12 +269,12 @@ var Profiles = DatabaseView.subClass({
         $('<div style="clear:both"></div>').appendTo(container);
 
         //Checkbox toggles for tables
-        var $tableControls = $('#table-controls');
+        var $tableControls = $('.table-controls');
         $tableControls.on('click', '.select-all', function(){
-            $('#table-checkboxes').find('input[type=checkbox]').prop('checked', true);
+            $('.table-checkboxes').find('input[type=checkbox]').prop('checked', true);
         });
         $tableControls.on('click', '.select-none', function(){
-            $('#table-checkboxes').find('input[type=checkbox]').prop('checked', false);
+            $('.table-checkboxes').find('input[type=checkbox]').prop('checked', false);
         });
 
         $('#table-checkboxes-container').on('click', '.tables-toggle', function(event){
