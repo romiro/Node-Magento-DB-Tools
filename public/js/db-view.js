@@ -138,6 +138,8 @@ var Clients = DatabaseView.subClass({
     }
 });
 
+
+
 var Servers = DatabaseView.subClass({
     init: function() {
         this._super();
@@ -193,6 +195,8 @@ var Servers = DatabaseView.subClass({
     }
 });
 
+
+
 var Profiles = DatabaseView.subClass({
     init: function() {
         this._super();
@@ -222,8 +226,6 @@ var Profiles = DatabaseView.subClass({
                 $select.append(Tools.format('<option value="%s">%s</option>', v['id'], text));
             });
         });
-
-        this.setupTableCheckboxes();
     },
 
     render: function() {
@@ -242,6 +244,12 @@ var Profiles = DatabaseView.subClass({
             var $form = $('<div class="form-group"><label>Excluded Tables</label></div>').append($tablesTemplate);
             $(this).find('div.form-group').last().after($form);
         });
+    },
+
+    finish: function() {
+        this.beforeRender();
+        this.render();
+        this.setupEvents();
     },
 
     /**
