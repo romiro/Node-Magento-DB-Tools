@@ -54,6 +54,7 @@ To see utilize the .map file in your browser, run this from project root: cd pub
         
 * DB Tool
     * After site profile refactor, DB tool will need its data endpoints changed to match the refactoring
+    * When DB tool finishes a dump and the download of the file, it should delete the file from the remote server
 
 * Web Frontend
     * Client
