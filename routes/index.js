@@ -130,11 +130,11 @@ Routes.prototype.use = function (webApp) {
      * Profile Routes
      */
     webApp.get('/profiles', function(req, resp){
+        resp.render('profiles/index');
+    });
 
-
-        sqliteDb.Profile.getAllJoined(function(data){
-            resp.render('profiles/index', {profiles: data});
-        });
+    webApp.get('/Profiles/new', function(req, resp){
+        resp.render('profiles/edit');
     });
 
     webApp.get('/Profiles/getAll', function(req, resp){

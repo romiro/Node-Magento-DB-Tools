@@ -2,37 +2,32 @@
 
 <% script('/js/db-view.js'); %>
 
-<div id="site-profiles" class="database-view">
-
+<div id="profiles">
+    <div class="primary-actions">
+        <button class="btn btn-success" id="new-profile">New Profile</button>
+    </div>
+    <ul class="list-group database-view" >
+    </ul>
 </div>
 
 <div id="template" class="profile-template">
-    <div class="panel panel-primary">
-        <div class="panel-body">
-            <form>
-                <input type="hidden" name="id" />
-                <div class="form-group">
-                    <label for="profile_name">Profile Name</label>
-                    <input type="text" class="form-control name" name="profile_name" placeholder="Profile Name" />
-                </div>
-
-                <div class="form-group">
-                    <label for="server_id">Server</label>
-                    <select name="server_id" class="form-control server_id"></select>
-                </div>
-
-                <div class="form-group">
-                    <label for="magento_path">Path to Magento</label>
-                    <input type="text" class="form-control" name="magento_path" placeholder="Path to Magento" />
-                </div>
-
-            </form>
+    <li class="list-group-item">
+        <div class="profile-label">
+            <span class="client-name">Speck Products</span> -
+            <span class="server-name">web01</span> -
+            <span class="profile-name">asdasd</span>
         </div>
-    </div>
+
+        <div class="actions">
+            <button type="button" class="btn profile-run">Run</button>
+            <button type="button" class="btn profile-edit">Edit</button>
+            <button type="button" class="btn profile-delete">Delete</button>
+        </div>
+    </li>
 </div>
 
 <script>
 $(function(){
-
+    var profilesIndex = new Profiles();
 });
 </script>

@@ -206,43 +206,27 @@ var Profiles = DatabaseView.subClass({
         var self = this;
 
         this.getData(function(){
-            self.getDataFrom('servers', function(data){
-                self.serverData = data;
-                self.getDataFrom('excludedTables', function(data){
-                    self.excludedTables = data;
-                    self.finish();
-                });
-            });
+            self.finish();
         });
     },
 
-    beforeRender: function() {
-        var self = this;
-        //Render select boxes for Server data
-        this.$template.find('.panel-body select.server_id').each(function(i){
-            var $select = $(this);
-            $.each(self.serverData, function(i, v){
-                var text = Tools.format('%s - %s', v['client_name'], v['server_name']);
-                $select.append(Tools.format('<option value="%s">%s</option>', v['id'], text));
-            });
+    beforeRender: function() {},
+
+    setupEvents: function() {
+        $('#new-profile').on('click', function(){
+            document.location = '/Profiles/new';
         });
     },
 
     render: function() {
-        this._super();
         var self = this;
+        $.each(this.data, function(i, val){
+            var $row = self.$template.clone();
+            $row.find('.client-name').text(val['client_name']);
+            $row.find('.server-name').text(val['server_name']);
+            $row.find('.profile-name').text(val['profile_name']);
 
-        //Change headings to include client name
-        this.$container.find('.panel.edit .panel-heading').each(function(i){
-            $(this).text(Tools.format('%s - %s - %s', self.data[i].client_name, self.data[i].server_name, $(this).text()));
-        });
-
-        //Add excluded tables checkboxes to all
-        var $tablesTemplate;
-        this.$container.find('.panel-body').each(function(i){
-            $tablesTemplate = $('#table-checkboxes-container').clone(true);
-            var $form = $('<div class="form-group"><label>Excluded Tables</label></div>').append($tablesTemplate);
-            $(this).find('div.form-group').last().after($form);
+            self.$container.append($row);
         });
     },
 
