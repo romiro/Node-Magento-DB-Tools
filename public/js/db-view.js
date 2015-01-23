@@ -234,6 +234,39 @@ var Profiles = DatabaseView.subClass({
         this.beforeRender();
         this.render();
         this.setupEvents();
+    }
+
+});
+
+var ProfileNew = DatabaseView.subClass({
+    init: function() {
+        this.singularName = 'Profile';
+        this.pluralName = 'Profiles';
+        var self = this;
+
+        this.getDataFrom('Servers', function(data){
+            self.servers = data;
+            self.getDataFrom('ExcludedTables', function(data){
+                self.excludedTables = data;
+                self.finish();
+            });
+        });
+    },
+
+    finish: function() {
+        this.render();
+    },
+
+    render: function() {
+        //Render select box for servers
+        var $serverSelect = $('#server-select');
+        $.each(this.servers, function(i, val){
+            var label = Tools.format('%s - %s', val['client_name'], val['server_name']);
+            $serverSelect.append(Tools.format('<option value="%s">%s</option>', val['server_id'], label));
+        });
+
+        //Render excluded table checkboxes
+        this.setupTableCheckboxes();
     },
 
     /**
@@ -241,7 +274,7 @@ var Profiles = DatabaseView.subClass({
      */
     setupTableCheckboxes: function() {
         var tables = this.excludedTables;
-        var container = $('.table-checkboxes');
+        var container = $('#excluded-tables');
         var len = tables.length;
 
         for (var i = 0; i < len; i++) {
@@ -279,6 +312,32 @@ var Profiles = DatabaseView.subClass({
             else {
                 $tablesContent.removeClass('show').slideUp();
                 $(this).find('span').removeClass('glyphicon-collapse-down').addClass('glyphicon-expand');
+            }
+        });
+    }
+});
+
+var ProfileEdit = ProfileNew.subClass({
+    init: function() {
+        this._super();
+
+        this.singularName = 'Profile';
+        this.pluralName = 'Profiles';
+        var self = this;
+
+        this.getData(function(){
+            self.finish();
+        });
+    },
+
+    getOne: function(id, callback) {
+        var self = this;
+        $.ajax({
+            url: Tools.format('/%s/get', this.pluralName),
+            dataType: 'json',
+            success: function(data){
+                self.data = data;
+                callback(data);
             }
         });
     }

@@ -134,7 +134,24 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.get('/Profiles/new', function(req, resp){
-        resp.render('profiles/edit');
+        resp.render('profiles/edit', {action: 'new'});
+    });
+
+    webApp.get(/\/Profiles\/edit\/(.*)/g , function(req, resp){
+        sqliteDb.Profile.getByJoined('Profile.id', req.route.params[0], function(data){
+            resp.render('profiles/edit', {action: 'edit', profile: data[0]});
+        });
+
+    });
+
+    webApp.get('/Profiles/get', function(req, resp){
+        var params = req.body;
+
+        if (params.id) {
+            sqliteDb.Profile.getByJoined('id', params.id, function(data){
+                resp.json(data);
+            });
+        }
     });
 
     webApp.get('/Profiles/getAll', function(req, resp){
@@ -157,19 +174,6 @@ Routes.prototype.use = function (webApp) {
                 resp.end();
             });
         }
-
-        //var sshEntry = SSHConfig.getHostByName(req.body['ssh-config-name']);
-        //var key = req.body['key'] ? req.body['key'] : null;
-        //var data = {
-        //    profileName: req.body['profile-name'],
-        //    sitePath: req.body['site-path'],
-        //    sshConfigName: req.body['ssh-config-name'],
-        //    sshHost: sshEntry['host'],
-        //    sshUser: sshEntry['user']
-        //};
-        //siteProfiles.set(key, data);
-        //siteProfiles.save();
-        //resp.end();
     });
 
     webApp.post('/Profiles/delete', function(req, resp){
