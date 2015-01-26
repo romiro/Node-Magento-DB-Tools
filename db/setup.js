@@ -22,6 +22,7 @@ module.exports = function(callback) {
         'server_id INTEGER,'+
         'profile_name TEXT,'+
         'magento_path TEXT,'+
+        'tables TEXT,'+
         'excluded_tables TEXT'+
         ');', function(){
             callback();

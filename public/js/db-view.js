@@ -240,8 +240,10 @@ var Profiles = DatabaseView.subClass({
 
 var ProfileNew = DatabaseView.subClass({
     init: function() {
+        this.$container = $('.database-view');
         this.singularName = 'Profile';
         this.pluralName = 'Profiles';
+
         var self = this;
 
         this.getDataFrom('Servers', function(data){
@@ -255,14 +257,36 @@ var ProfileNew = DatabaseView.subClass({
 
     finish: function() {
         this.render();
+        this.setupEvents();
+    },
+
+    setupEvents: function(){
+        var self = this;
+        //Save button
+        $('button.save-button').on('click', function(event){
+            var $inputs = $('form#profile-form').find(':input').not(':button');
+            if (!Tools.validate($inputs, self.$container)) {
+                window.scrollTo(0,0);
+                return false;
+            }
+            $.ajax({
+                url: Tools.format('/%s/save', self.pluralName),
+                type: 'POST',
+                data: $inputs.serialize(),
+                success: function() {
+                    document.location = document.location;
+                }
+            });
+        });
     },
 
     render: function() {
         //Render select box for servers
         var $serverSelect = $('#server-select');
+        $serverSelect.append('<option value="">Please select a server...</option>');
         $.each(this.servers, function(i, val){
             var label = Tools.format('%s - %s', val['client_name'], val['server_name']);
-            $serverSelect.append(Tools.format('<option value="%s">%s</option>', val['server_id'], label));
+            $serverSelect.append(Tools.format('<option value="%s">%s</option>', val['id'], label));
         });
 
         //Render excluded table checkboxes
@@ -284,7 +308,7 @@ var ProfileNew = DatabaseView.subClass({
                 .attr('for', tables[i])
                 .appendTo($chkContainer.children());
             var checkbox = $('<input type="checkbox" />')
-                .attr('name', 'tables')
+                .attr('name', 'excluded_tables')
                 .attr('id', tables[i])
                 .prop('checked', true)
                 .val(tables[i])
@@ -296,10 +320,10 @@ var ProfileNew = DatabaseView.subClass({
         //Checkbox toggles for tables
         var $tableControls = $('.table-controls');
         $tableControls.on('click', '.select-all', function(){
-            $('.table-checkboxes').find('input[type=checkbox]').prop('checked', true);
+            $('#excluded-tables').find('input[type=checkbox]').prop('checked', true);
         });
         $tableControls.on('click', '.select-none', function(){
-            $('.table-checkboxes').find('input[type=checkbox]').prop('checked', false);
+            $('#excluded-tables').find('input[type=checkbox]').prop('checked', false);
         });
 
         $('#table-checkboxes-container').on('click', '.tables-toggle', function(event){

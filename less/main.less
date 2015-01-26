@@ -1,4 +1,6 @@
+@import "variables";
 @import "bootstrap/bootstrap";
+
 
 //--------------------
 // Generic styles
@@ -8,6 +10,9 @@ body.wait {
 }
 hr {
     margin: 1em 0;
+}
+.container {
+    padding-bottom: 20px;
 }
 .list-group-item {
     &.bg-primary {
@@ -26,6 +31,9 @@ hr {
     &.bg-danger {
         .bg-variant(@state-danger-bg);
     }
+}
+h2 {
+    .text-primary;
 }
 
 
@@ -94,7 +102,6 @@ a.select-all, a.select-none {
 }
 #profiles {
     .primary-actions {
-        text-align: right;
         margin: 0 7px 7px;
     }
     div.profile-label {

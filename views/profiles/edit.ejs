@@ -4,17 +4,24 @@
 
 <% var headerTitle = action == 'new' ? 'New Profile' : 'Editing Profile <span>'+profile['profile_name']+'</span>'; %>
 
-<div id="profile-edit">
+<div id="profile-edit" class="database-view">
     <h2><%- headerTitle %></h2>
+
     <input type="hidden" id="type" value="<%- action %>" />
-    <form>
+
+    <form id="profile-form">
+
+        <% if(action == 'edit') { %>
+            <input type="hidden" name="id" value="<%- profile['id'] %>" />
+        <% } %>
+
         <div class="form-group">
             <label for="profile_name">Profile Name</label>
             <input type="text" class="form-control name" name="profile_name" placeholder="Profile Name" />
         </div>
 
         <div class="form-group">
-            <label for="server_id">Client</label>
+            <label for="server_id">Server</label>
             <select id="server-select" name="server_id" class="form-control server_id"></select>
         </div>
 
@@ -29,7 +36,7 @@
             <div class="row">
                 <div class="box-group">
                     <div class="box-group-content" id="tables-content">
-                        <div id="table-controls">
+                        <div class="table-controls">
                             <a class="select-all">Select All</a> |
                             <a class="select-none">Select None</a>
                         </div>
@@ -40,6 +47,8 @@
             </div>
 
         </div>
+
+        <button type="button" class="btn btn-success save-button">Save Profile</button>
     </form>
 </div>
 

@@ -9,6 +9,7 @@ var JsonStore = require('../lib/json-store');
 
 var dbRoutes = require('./database');
 
+var excludedTables = new JsonStore('excluded-tables').getAll();
 
 sqliteDb.connect();
 
@@ -162,6 +163,7 @@ Routes.prototype.use = function (webApp) {
 
     webApp.post('/Profiles/save', function(req, resp){
         var params = req.body;
+        params['excluded_tables'] = JSON.stringify(params['excluded_tables']);
 
         if (params.id) {
             sqliteDb.Profile.update(params, function(){
@@ -169,7 +171,9 @@ Routes.prototype.use = function (webApp) {
             });
         }
         else {
-            delete params['id'];
+            //Inserting default list of tables for now - will get tables from server in later release
+            params['tables'] = JSON.stringify(excludedTables);
+
             sqliteDb.Profile.insert(params, function(lastId){
                 resp.end();
             });
@@ -194,8 +198,7 @@ Routes.prototype.use = function (webApp) {
     }.bind(webApp));
 
     webApp.get('/ExcludedTables/getAll', function(req, resp){
-        var tables = new JsonStore('excluded-tables').getAll();
-        resp.json(tables);
+        resp.json(excludedTables);
     });
 
 };
