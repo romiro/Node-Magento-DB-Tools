@@ -213,8 +213,46 @@ var Profiles = DatabaseView.subClass({
     beforeRender: function() {},
 
     setupEvents: function() {
+        //New button
         $('#new-profile').on('click', function(){
             document.location = '/Profiles/new';
+        });
+
+        var $view = $('.database-view');
+
+        //Edit button
+        $view.on('click', 'button.profile-edit', function(event){
+            var id = $(this).parents('.list-group-item').find('input.profile-id').val();
+            document.location = '/Profiles/edit/' + id;
+        });
+
+        //Delete button
+        $view.on('click', 'button.profile-delete', function(event){
+            var id = $(this).parents('.list-group-item').find('input.profile-id').val();
+            var name = $(this).parents('.list-group-item').find('.profile-name').text();
+            var response = window.confirm(Tools.format('Are you sure you want to delete the Profile "%s"?', name));
+
+            if (response === true) {
+                $.ajax({
+                    url: '/Profiles/delete',
+                    type: 'POST',
+                    data: {id: id},
+                    success: function() {
+                        document.location = document.location;
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Problem deleting Profile: ' + errorThrown);
+                        document.location = document.location;
+                    }
+                });
+            }
+        });
+
+
+        //Run button
+        $view.on('click', 'button.profile-run', function(event){
+            var id = $(this).parents('.list-group-item').find('input.profile-id').val();
+            document.location = '/Profiles/run/' + id;
         });
     },
 
@@ -225,7 +263,7 @@ var Profiles = DatabaseView.subClass({
             $row.find('.client-name').text(val['client_name']);
             $row.find('.server-name').text(val['server_name']);
             $row.find('.profile-name').text(val['profile_name']);
-
+            $row.find('input.profile-id').val(val['id']);
             self.$container.append($row);
         });
     },
@@ -274,7 +312,7 @@ var ProfileNew = DatabaseView.subClass({
                 type: 'POST',
                 data: $inputs.serialize(),
                 success: function() {
-                    document.location = document.location;
+                    document.location = '/Profiles';
                 }
             });
         });

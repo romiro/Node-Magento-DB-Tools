@@ -139,7 +139,8 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.get(/\/Profiles\/edit\/(.*)/g , function(req, resp){
-        sqliteDb.Profile.getByJoined('Profile.id', req.route.params[0], function(data){
+        var id = req.route.params[0];
+        sqliteDb.Profile.getByJoined('Profile.id', id, function(data){
             resp.render('profiles/edit', {action: 'edit', profile: data[0]});
         });
 
@@ -181,14 +182,24 @@ Routes.prototype.use = function (webApp) {
     });
 
     webApp.post('/Profiles/delete', function(req, resp){
-        var key = req.body['key'];
+        var id = req.body['id'];
+
         try {
-            siteProfiles.remove(key);
+            sqliteDb.Profile.deleteBy('id', id, function(numChanges){
+                resp.end();
+            });
         }
         catch (e) {
+            resp.send(500, e);
             resp.end(e);
         }
-        resp.end();
+    });
+
+    webApp.get(/\/Profiles\/run\/(.*)/g, function(req, resp){
+        var id = req.route.params[0];
+        sqliteDb.Profile.getByJoined('Profile.id', id, function(data){
+            resp.render('profiles/run', {profile: data[0]});
+        });
     });
 
     dbRoutes.use(webApp);
