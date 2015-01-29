@@ -1,4 +1,18 @@
-var DatabaseView = Object.subClass({
+var DatabaseViewAbstract = Object.create({
+    init: function(){},
+
+    getData: function(callback){},
+    getDataFrom: function(type, callback) {},
+
+    setupEvents: function(){},
+    createAddBlock: function(){},
+
+    beforeRender: function(){},
+    render: function(){},
+    finish: function(){}
+});
+
+var DatabaseView = DatabaseViewAbstract.subClass({
 
     init: function() {
         this.$template = $('#template').children().first().clone();
@@ -84,8 +98,6 @@ var DatabaseView = Object.subClass({
 
         });
     },
-
-    beforeRender: function() {},
 
     render: function() {
         var self = this;
@@ -242,7 +254,7 @@ var Profiles = DatabaseView.subClass({
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert('Problem deleting Profile: ' + errorThrown);
-                        document.location = document.location;
+                        //document.location = document.location;
                     }
                 });
             }
@@ -320,7 +332,7 @@ var ProfileNew = DatabaseView.subClass({
 
     render: function() {
         //Render select box for servers
-        var $serverSelect = $('#server-select');
+        var $serverSelect = $('select#server_id');
         $serverSelect.append('<option value="">Please select a server...</option>');
         $.each(this.servers, function(i, val){
             var label = Tools.format('%s - %s', val['client_name'], val['server_name']);
@@ -380,16 +392,24 @@ var ProfileNew = DatabaseView.subClass({
 });
 
 var ProfileEdit = ProfileNew.subClass({
-    init: function() {
+    init: function(profile) {
         this._super();
 
-        this.singularName = 'Profile';
-        this.pluralName = 'Profiles';
+        this.profile = profile;
         var self = this;
 
         this.getData(function(){
             self.finish();
         });
+    },
+
+    render: function() {
+        this._super();
+
+        //Set values of inputs
+        $('input#profile_name').val(this.profile['profile_name']);
+        $('input#magento_path').val(this.profile['magento_path']);
+        $('select#server_id').val(this.profile['server_id']);
     },
 
     getOne: function(id, callback) {

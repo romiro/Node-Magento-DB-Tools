@@ -1,6 +1,9 @@
 'use strict';
-var express = require('express');
+
 var http = require('http');
+var util = require('util');
+
+var express = require('express');
 var engine = require('ejs-locals');
 
 var routes = require('./routes/index');
@@ -17,6 +20,7 @@ function WebServer() {
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
+    webApp.locals.util = util;
 
     //Views setup
     webApp.engine('ejs', engine);

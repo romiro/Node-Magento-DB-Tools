@@ -16,17 +16,17 @@
 
         <div class="form-group">
             <label for="profile_name">Profile Name</label>
-            <input type="text" class="form-control name" name="profile_name" placeholder="Profile Name" />
+            <input type="text" class="form-control name" name="profile_name" placeholder="Profile Name" id="profile_name" />
         </div>
 
         <div class="form-group">
             <label for="server_id">Server</label>
-            <select id="server-select" name="server_id" class="form-control server_id"></select>
+            <select id="server_id" name="server_id" class="form-control server_id"></select>
         </div>
 
         <div class="form-group">
             <label for="magento_path">Path to Magento</label>
-            <input type="text" class="form-control name" name="magento_path" placeholder="Path on server to Magento root" />
+            <input type="text" class="form-control name" name="magento_path" placeholder="Path on server to Magento root" id="magento_path" />
         </div>
 
 
@@ -47,7 +47,10 @@
 
         </div>
 
-        <button type="button" class="btn btn-success save-button">Save Profile</button>
+        <div class="actions">
+            <button type="button" class="btn btn-success save-button">Save Profile</button>
+            <button type="button" class="btn btn-success save-button">Save and Run Profile</button>
+        </div>
     </form>
 </div>
 
@@ -59,7 +62,7 @@
             var profileNew = new ProfileNew();
         }
         else {
-            var profileEdit = new ProfileEdit();
+            var profileEdit = new ProfileEdit(<%- JSON.stringify(typeof profile !== 'undefined' ? profile : {}) %>);
         }
 
     });

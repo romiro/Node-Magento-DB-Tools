@@ -47,7 +47,7 @@ Routes.prototype.use = function (webApp) {
     /**
      * Client Routes
      */
-    webApp.get('/clients', function(req, resp){
+    webApp.get('/Clients', function(req, resp){
         resp.render('clients');
     });
 
@@ -87,7 +87,7 @@ Routes.prototype.use = function (webApp) {
     /**
      * Server Routes
      */
-    webApp.get('/servers', function(req, resp){
+    webApp.get('/Servers', function(req, resp){
         resp.render('servers');
     });
 
@@ -130,7 +130,7 @@ Routes.prototype.use = function (webApp) {
     /**
      * Profile Routes
      */
-    webApp.get('/profiles', function(req, resp){
+    webApp.get('/Profiles', function(req, resp){
         resp.render('profiles/index');
     });
 
@@ -195,11 +195,16 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
-    webApp.get(/\/Profiles\/run\/(.*)/g, function(req, resp){
+    webApp.get(/\/Profiles\/run\/?(.*)/g, function(req, resp){
         var id = req.route.params[0];
-        sqliteDb.Profile.getByJoined('Profile.id', id, function(data){
-            resp.render('profiles/run', {profile: data[0]});
-        });
+        if (!id) {
+            resp.render('profiles/run', {profile: null});
+        }
+        else {
+            sqliteDb.Profile.getByJoined('Profile.id', id, function(data){
+                resp.render('profiles/run', {profile: data[0]});
+            });
+        }
     });
 
     dbRoutes.use(webApp);

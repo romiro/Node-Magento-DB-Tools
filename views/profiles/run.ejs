@@ -1,6 +1,18 @@
 <% layout('../layout'); %>
-<% var headerTitle = 'Run Profile <span>'+profile['profile_name']+'</span>'; %>
+<% var headerTitle = 'Run Profile' + (profile ? ' <span>'+profile['profile_name']+'</span>' : ''); %>
 
 <div id="profile-run" class="database-view">
     <h2><%- headerTitle %></h2>
+
+    <form id="run-form">
+        <div class="form-group">
+            <label for="profile_name">Selected Profile</label>
+            <input type="text" class="form-control name" name="profile_name" placeholder="Profile Name" id="profile_name" />
+        </div>
+    </form>
 </div>
+
+
+<script>
+    var runProfile = new RunProfile();
+</script>
