@@ -27,7 +27,9 @@ Server.prototype.getByJoined = function(column, search, callback){
 
 Server.prototype.getAllJoined = function(callback){
     var conn = this.db.connection;
-    var statement = 'SELECT * FROM Server INNER JOIN Client ON Server.client_id = Client.id';
+    var statement = 'SELECT Server.id as id, server_name, ssh_host, ssh_username, ' +
+        'Client.id as client_id, client_code, client_name ' +
+        'FROM Server INNER JOIN Client ON Server.client_id = Client.id';
 
     conn.all(statement, function(err, rows){
         if (err) throw err;
