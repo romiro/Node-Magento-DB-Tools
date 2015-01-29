@@ -1,26 +1,5 @@
-var DatabaseViewAbstract = Object.create({
+var DatabaseViewAbstract = Object.subClass({
     init: function(){},
-
-    getData: function(callback){},
-    getDataFrom: function(type, callback) {},
-
-    setupEvents: function(){},
-    createAddBlock: function(){},
-
-    beforeRender: function(){},
-    render: function(){},
-    finish: function(){}
-});
-
-var DatabaseView = DatabaseViewAbstract.subClass({
-
-    init: function() {
-        this.$template = $('#template').children().first().clone();
-        this.$container = $('.database-view');
-        this.data = null;
-        this.singularName = '';
-        this.pluralName = '';
-    },
 
     getData: function(callback) {
         var self = this;
@@ -44,6 +23,41 @@ var DatabaseView = DatabaseViewAbstract.subClass({
                 callback(data);
             }
         });
+    },
+
+    getOneFrom: function(type, id, callback) {
+        var self = this;
+        type = Tools.capitalize(type);
+        $.ajax({
+            url: Tools.format('/%s/get', type),
+            dataType: 'json',
+            success: function(data){
+                self.data = data;
+                callback(data);
+            }
+        });
+    },
+
+    setupEvents: function(){},
+    createAddBlock: function(){},
+
+    beforeRender: function(){},
+    render: function(){},
+    finish: function(){
+        this.beforeRender();
+        this.render();
+        this.setupEvents();
+    }
+});
+
+var DatabaseView = DatabaseViewAbstract.subClass({
+
+    init: function() {
+        this.$template = $('#template').children().first().clone();
+        this.$container = $('.database-view');
+        this.data = null;
+        this.singularName = '';
+        this.pluralName = '';
     },
 
     setupEvents: function() {
@@ -288,7 +302,7 @@ var Profiles = DatabaseView.subClass({
 
 });
 
-var ProfileNew = DatabaseView.subClass({
+var ProfileNew = DatabaseViewAbstract.subClass({
     init: function() {
         this.$container = $('.database-view');
         this.singularName = 'Profile';
@@ -303,11 +317,6 @@ var ProfileNew = DatabaseView.subClass({
                 self.finish();
             });
         });
-    },
-
-    finish: function() {
-        this.render();
-        this.setupEvents();
     },
 
     setupEvents: function(){
@@ -410,17 +419,104 @@ var ProfileEdit = ProfileNew.subClass({
         $('input#profile_name').val(this.profile['profile_name']);
         $('input#magento_path').val(this.profile['magento_path']);
         $('select#server_id').val(this.profile['server_id']);
+
+        //TODO: Select the right checkboxes based on saved data
+
+    }
+
+});
+
+var RunProfile = DatabaseViewAbstract.subClass({
+    init: function(profile) {
+        var self = this;
+        this.$container = $('#profile-run');
+        this.getDataFrom('Profiles', function(data){
+            self.profiles = data;
+            self.finish();
+        });
     },
 
-    getOne: function(id, callback) {
+    render: function() {
+        var $profileSelect = $('#profile_id');
+        $profileSelect.append('<option value="">Please select a profile...</option>');
+        $.each(this.profiles, function(i, val){
+            var label = Tools.format('%s - %s - %s', val['client_name'], val['server_name'], val['profile_name']);
+            $profileSelect.append(Tools.format('<option value="%s">%s</option>', val['id'], label));
+        });
+    },
+
+    setupEvents: function() {
         var self = this;
-        $.ajax({
-            url: Tools.format('/%s/get', this.pluralName),
-            dataType: 'json',
-            success: function(data){
-                self.data = data;
-                callback(data);
+
+        //Show/hide password input
+        $('.form-group-radio input[type=radio]').on('click', function(){
+            if ($(this).is('.password')) {
+                $('.form-group.password').show();
+                $('.form-group.password input').attr('disabled', false);
             }
+            else {
+                $('.form-group.password').hide();
+                $('.form-group.password input').attr('disabled', true);
+            }
+        });
+
+        //Run / Test buttons
+        var isDbConnRunning = false;
+        $('#test-button, #run-button').on('click', function(event){
+            if (isDbConnRunning === true) {
+                window.alert('A profile is currently running, cannot continue');
+                event.stopPropagation();
+                return false;
+            }
+            isDbConnRunning = true;
+
+            var $inputs = $('#run-form').find(':input').not(':button');
+            if (!Tools.validate($inputs, self.$container)) {
+                isDbConnRunning = false;
+                return false;
+            }
+
+            var url;
+            if ($(this).is('#run-button')) {
+                url = '/runDatabaseConfiguration';
+            }
+            else {
+                url = '/testDatabaseConnection';
+            }
+
+            Tools.showWait();
+
+            var $messages = $('#database-messages');
+            $messages.empty();
+
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                type: 'POST',
+                data: $inputs.serialize(),
+                success: function(data) {
+                    if (data['messages'] && data['messages'].length) {
+                        $.each(data['messages'], function(i, val){
+                            $messages.append($('<li class="list-group-item bg-success"></li>').text(val));
+                        });
+                    }
+                    if (data['error']) {
+                        $messages.append($('<li class="list-group-item bg-danger"></li>').text(data['error']));
+                    }
+                    console.log('DatabaseConnection::onsuccess', data);
+                },
+                error: function(xhr, status, errorThrown){
+                    var response = xhr.responseText;
+                    if (status == 'parsererror') {
+                        console.error('Error with response from database connection test:', response, errorThrown);
+                    }
+                },
+                complete: function() {
+                    Tools.hideWait();
+                    isDbConnRunning = false;
+                    console.log('DatabaseConnection::oncomplete');
+                }
+            });
         });
     }
 });

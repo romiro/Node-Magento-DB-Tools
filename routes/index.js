@@ -3,7 +3,6 @@
 var config = require('../config');
 
 var SSHConfig = require('../lib/ssh-config-reader');
-var siteProfiles = require('../lib/site-profiles');
 var sqliteDb = require('../db');
 var JsonStore = require('../lib/json-store');
 
@@ -16,8 +15,6 @@ sqliteDb.connect();
 function Routes() {}
 
 Routes.prototype.use = function (webApp) {
-
-    webApp.locals.siteProfiles = siteProfiles;
 
     webApp.get('/', function(req, resp){
         resp.render('index');

@@ -56,7 +56,7 @@ var Tools = {
     validate: function validate($inputs, $container) {
         var errors = false;
         $container.find('.error').remove();
-        $inputs = $inputs.not('[type=hidden]').not('[type=checkbox]');
+        $inputs = $inputs.not('[type=hidden]').not('[type=checkbox]').not(':disabled');
 
         $inputs.each(function(i, input){
             if ($(input).val() == '') {
