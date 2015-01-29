@@ -27,7 +27,13 @@ Profile.prototype.getByJoined = function(column, search, callback){
 
 Profile.prototype.getAllJoined = function(callback){
     var conn = this.db.connection;
-    var statement = 'SELECT * FROM Profile INNER JOIN Server ON Profile.server_id = Server.id INNER JOIN Client ON Server.client_id = Client.id';
+    var statement = 'SELECT Profile.id as id, ' +
+        'profile_name, magento_path, excluded_tables, tables, ' +
+        'Client.id as client_id, client_name, client_code, ' +
+        'Server.id as server_id, server_name, ssh_host, ssh_username ' +
+        'FROM Profile ' +
+        'INNER JOIN Server ON Profile.server_id = Server.id ' +
+        'INNER JOIN Client ON Server.client_id = Client.id';
 
     conn.all(statement, function(err, rows){
         if (err) throw err;
