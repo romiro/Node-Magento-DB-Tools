@@ -13,13 +13,16 @@ util.inherits(Server, Model);
 Server.prototype.getByJoined = function(column, search, callback){
     var conn = this.db.connection;
     var statement = util.format(
-        'SELECT * FROM Server ' +
-        'INNER JOIN Client ON Server.client_id = Client.id ' +
-        'WHERE %s = "%s"',
-        column, this.sanitize(search)
+        'SELECT Server.id as id, server_name, ssh_host, ssh_username, ' +
+        'Client.id as client_id, client_code, client_name ' +
+        'FROM Server INNER JOIN Client ON Server.client_id = Client.id' +
+        'WHERE %s = ?',
+        column
     );
 
-    conn.all(statement, function(err, rows){
+    search = this.sanitize(search);
+
+    conn.all(statement, [search], function(err, rows){
         if (err) throw err;
         callback(rows);
     });

@@ -19,5 +19,5 @@ config.js
 
 lib/storage/**
 !lib/storage/excluded-tables.json
-
+db/storage/**
 test/storage/**
