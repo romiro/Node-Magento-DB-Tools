@@ -4,6 +4,12 @@ var sqliteDb = require('../db');
 var DatabaseConnection = require('../lib/database-connection');
 var config = require('../config');
 
+/**
+ * Global variable to module to ensure that even a new instance, if it were created, can't run twice
+ * @type {boolean}
+ */
+var isRunning = false;
+
 function DatabaseRoute() {}
 
 DatabaseRoute.prototype.use = function(webApp) {
@@ -18,15 +24,19 @@ DatabaseRoute.prototype.use = function(webApp) {
     });
 
     webApp.post('/runDatabaseConfiguration', function(req, resp){
-        resp.json({error:'Not yet'});
-        return false;
         handleRequest(req, resp, 'run');
     });
 
     function handleRequest(req, resp, type) {
+        var returnJson = {messages:[]};
+
+        if (isRunning) {
+            returnJson['error'] = 'Dump is already running. Check log output if you think this is not the case, and restart the application if so';
+            resp.json(returnJson);
+        }
+
         var params = req.body;
         var options = util._extend(defaultOptions);
-        var siteProfile;
 
         //Parse incoming parameters
         options.type = type;
@@ -37,7 +47,6 @@ DatabaseRoute.prototype.use = function(webApp) {
 
         //Set up the DB object
         var db = new DatabaseConnection();
-        var returnJson = {messages:[]};
 
         db.on('error', function(error){
             returnJson['error'] = error;
@@ -56,8 +65,9 @@ DatabaseRoute.prototype.use = function(webApp) {
         });
 
         //Get the profile from the DB and start the dump
-        sqliteDb.Profile.getByJoined('id', params['profile_id'], function(data){
-            options.siteProfile = data;
+        sqliteDb.Profile.getByJoined('Profile.id', params['profile_id'], function(data){
+
+            options.siteProfile = data[0];
             db.start(options);
         });
     }
