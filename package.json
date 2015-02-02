@@ -8,6 +8,7 @@
     "express": "~3.4.8",
     "libxmljs": "^0.10.0",
     "mysql": "~2.3.2",
+    "sprintf-js": "^1.0.2",
     "sqlite3": "^3.0.4",
     "ssh2": ">= 0.2.17",
     "underscore": "^1.6.0"

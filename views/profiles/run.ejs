@@ -1,7 +1,7 @@
 <% layout('../layout'); %>
 
 <% script('/js/db-view.js'); %>
-<% var headerTitle = 'Run Profile' + (profile ? ' <span>'+profile['profile_name']+'</span>' : ''); %>
+<% var headerTitle = 'Run Profile' + (profile ? ' <span>'+profile['profile_name']+'</span>' : '<span></span>'); %>
 
 <div id="profile-run" class="database-view">
     <h2><%- headerTitle %></h2>
@@ -12,7 +12,7 @@
                 <label for="profile_id">Selected Profile</label>
                 <select id="profile_id" name="profile_id" class="form-control"></select>
             </div>
-        <% } else {%>
+        <% } else { %>
             <input type="hidden" name="profile_id" value="<%- profile['id'] %>" />
         <% } %>
 
@@ -39,7 +39,11 @@
         </div>
 
     </form>
-    <ul class="list-group" id="database-messages"></ul>
+
+    <div>
+        <h3>Messages</h3>
+        <ul class="list-group" id="database-messages"></ul>
+    </div>
 </div>
 
 
