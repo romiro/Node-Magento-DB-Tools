@@ -50,14 +50,24 @@ Model.prototype.insert = function(data, callback) {
         delete data['id'];
     }
 
+    var bindings = [];
     var statement = util.format('INSERT INTO %s (%s) VALUES (%s);',
         this.tableName,
+
         _.keys(data).join(','),
-        _.chain(data).values(data).map(function(val){ return '"'+ self.sanitize(val) +'"' }).join(',').value()
+
+        _.chain(data)
+            .values(data)
+            .map(function(val){
+                bindings.push(val);
+                return '?';
+            })
+            .join(',')
+            .value()
     );
 
     conn.serialize(function(){
-        conn.run(statement, function(err){
+        conn.run(statement, bindings, function(err){
             if (err) throw err;
             callback(this.lastID);
         });
@@ -75,11 +85,13 @@ Model.prototype.update = function(data, callback) {
     var id = data['id'];
     delete data['id'];
 
+    var bindings = [];
     var statement = util.format('UPDATE %s SET %s WHERE %s.id = %s',
         this.tableName,
         _.chain(data)
             .map(function(val, key){
-                return util.format('%s = "%s"', key, self.sanitize(val))
+                bindings.push(val);
+                return util.format('%s = ?', key)
             }).join(',')
         .value(),
         this.tableName,
@@ -87,7 +99,7 @@ Model.prototype.update = function(data, callback) {
     );
 
     conn.serialize(function(){
-        conn.run(statement, function(err){
+        conn.run(statement, bindings, function(err){
             if (err) throw err;
             callback(this.changes);
         });
