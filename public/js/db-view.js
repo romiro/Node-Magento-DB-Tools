@@ -360,15 +360,17 @@ var ProfileNew = DatabaseViewAbstract.subClass({
         var container = $('#excluded-tables');
         var len = tables.length;
 
+
         for (var i = 0; i < len; i++) {
             var $chkContainer = $('<div class="col-md-6"></div>').append('<div class="checkbox"></div>');
+            var identifier = 'checkbox_' + tables[i];
             var label = $('<label></label>')
                 .text(tables[i])
-                .attr('for', tables[i])
+                .attr('for', identifier)
                 .appendTo($chkContainer.children());
-            var checkbox = $('<input type="checkbox" />')
+            var checkbox = $('<input type="checkbox" class="excluded-table-checkbox" />')
                 .attr('name', 'excluded_tables')
-                .attr('id', tables[i])
+                .attr('id', identifier)
                 .prop('checked', true)
                 .val(tables[i])
                 .appendTo(label);
@@ -385,30 +387,41 @@ var ProfileNew = DatabaseViewAbstract.subClass({
             $('#excluded-tables').find('input[type=checkbox]').prop('checked', false);
         });
 
-        $('#table-checkboxes-container').on('click', '.tables-toggle', function(event){
-            var $tablesContent = $(event.delegateTarget).find('#tables-content');
+        //TODO: vvvvv Get a working dropdown again vvvvv
 
-            if (!$tablesContent.hasClass('show')) {
-                $tablesContent.addClass('show').slideDown();
-                $(this).find('span').removeClass('glyphicon-expand').addClass('glyphicon-collapse-down');
-            }
-            else {
-                $tablesContent.removeClass('show').slideUp();
-                $(this).find('span').removeClass('glyphicon-collapse-down').addClass('glyphicon-expand');
-            }
-        });
+        //$('#table-checkboxes-container').on('click', '.tables-toggle', function(event){
+        //    var $tablesContent = $(event.delegateTarget).find('#tables-content');
+        //
+        //    if (!$tablesContent.hasClass('show')) {
+        //        $tablesContent.addClass('show').slideDown();
+        //        $(this).find('span').removeClass('glyphicon-expand').addClass('glyphicon-collapse-down');
+        //    }
+        //    else {
+        //        $tablesContent.removeClass('show').slideUp();
+        //        $(this).find('span').removeClass('glyphicon-collapse-down').addClass('glyphicon-expand');
+        //    }
+        //});
     }
 });
 
 var ProfileEdit = ProfileNew.subClass({
     init: function(profile) {
-        this._super();
-
         this.profile = profile;
+
+        this.$container = $('.database-view');
+        this.singularName = 'Profile';
+        this.pluralName = 'Profiles';
+
         var self = this;
 
         this.getData(function(){
-            self.finish();
+            self.getDataFrom('Servers', function(data){
+                self.servers = data;
+                self.getDataFrom('ExcludedTables', function(data){
+                    self.excludedTables = data;
+                    self.finish();
+                });
+            });
         });
     },
 
@@ -421,7 +434,18 @@ var ProfileEdit = ProfileNew.subClass({
         $('select#server_id').val(this.profile['server_id']);
 
         //TODO: Select the right checkboxes based on saved data
+        try {
+            var excludedTables = JSON.parse(this.profile['excluded_tables']);
+        }
+        catch (e) {
+            alert("Problem parsing JSON data for excluded tables. Please review data or contact a dev: \n"+e);
+            return false;
+        }
+        $('input.excluded-table-checkbox').attr('checked', false);
 
+        $.each(excludedTables, function(key, val){
+            $(Tools.format('#checkbox_%s', val)).prop('checked', true);
+        });
     }
 
 });
