@@ -62,6 +62,7 @@ DatabaseRoute.prototype.use = function(webApp) {
         db.on('finish', function(){
             console.log('DatabaseConnection :: FINISH');
             resp.json(returnJson);
+            isRunning = false;
         });
 
         //Get the profile from the DB and start the dump
