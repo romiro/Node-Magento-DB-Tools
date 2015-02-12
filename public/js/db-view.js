@@ -433,7 +433,6 @@ var ProfileEdit = ProfileNew.subClass({
         $('input#magento_path').val(this.profile['magento_path']);
         $('select#server_id').val(this.profile['server_id']);
 
-        //TODO: Select the right checkboxes based on saved data
         try {
             var excludedTables = JSON.parse(this.profile['excluded_tables']);
         }

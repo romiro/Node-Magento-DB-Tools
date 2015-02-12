@@ -50,10 +50,12 @@ To see utilize the .map file in your browser, run this from project root: cd pub
 ### TODO
 
 * Site Profile system
-    * Currently undergoing massive overhaul into a 3 table sqlite data structure, separating Client, Server, and Profile concepts
+    * ~~Currently undergoing massive overhaul into a 3 table sqlite data structure, separating Client, Server, and Profile concepts~~
         
 * DB Tool
-    * After site profile refactor, DB tool will need its data endpoints changed to match the refactoring
+    * ~~After site profile refactor, DB tool will need its data endpoints changed to match the refactoring~~
+    * Remote file needs to be deleted after download
+    * Possibly need to refactor local file download to read piece by piece and write file to local machine rather than storing the entire thing into memory, as node has some hardcoded memory limits that some DB dumps would definitely surpass
 
 * Web Frontend
     * Client
