@@ -23,13 +23,43 @@ After that, just
     
 And browse to http://localhost:8800 (or whichever port you configured for your web server)
 
+### Site Profiles
+The site profile system is separated into three entities: client, server, and profile. You have to create one of each to have a fully functional database dump action.
+
+Once a profile is set up with a related server and client, you can click the "Run" button the profile page to bring up the buttons which start the action.
+ 
+Keep an eye on your console to see the status of the database dump. Maybe one day socket.io will just output these messages directly to the browser.
+
+### Command-line access
+There are a few CLI options that are available, you can see a list by just running ./app without any options
+
+      Usage: app [options]
+    
+      Options:
+    
+        -h, --help                   output usage information
+        -V, --version                output the version number
+        --start-server               Start web server using options defined in config.js
+           --port [port]             Used with --start-server, port that web server will listen on. Defaults to config.js value
+                                     
+        --list-profiles              List configured site profiles
+        --show-profile [profile id]  Show information stored for a given profile name
+          --full                     Used with --show-profile to show extended information
+                                     
+        --run-profile [profile id]   Run given profile, defaulting to full dump
+           --selective-dump          Optional, used with --run-profile, performs a selective table dump excluding tables in lib/storage/excluded-tables.json
+        --test-profile [profile id]  Test run for given profile
+                                     
+        --setup-db                   Run the scripts to initialize the Sqlite3 database
+
+
+### Development
 Grunt is installed and there is a less and watch task in there, but the compiled css and map files are committed with each change.
 
 To see utilize the .map file in your browser, run this from project root: cd public/css; ln -s ../../less
 
 
 ### Notes
-* App should be fully functional all the way through, using the current HEAD of master branch (1/12/15)
 * The tool available on the root page is fully functional and should be useful in assisting with remote database dumps
 
 
@@ -97,6 +127,10 @@ To see utilize the .map file in your browser, run this from project root: cd pub
             * If exists, require() file and run a generic method which initiates script file against already-connected DB
     * Export database again to another configured location (this will be where devs pick up the file for use - the means for this are TBD)
 
+* Misc
+    * Logging to file - both webserver hits and the output of a profile run
+    * Socket.io re-integration to output the messages during the dump directly to the web browser
+     
 * Long Term Plans, New Features
     * PHP Info
         * Query a configured server for the output of php -i as run through CLI
