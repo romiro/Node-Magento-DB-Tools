@@ -4,11 +4,12 @@ var http = require('http');
 var util = require('util');
 
 var express = require('express');
-var logger = require('morgan');
+var expressLogger = require('morgan');
 var bodyParser = require('body-parser');
 var timeout = require('connect-timeout');
 var engine = require('ejs-locals');
 
+var Logger = require('./lib/logger');
 var routes = require('./routes/index');
 var config = require('./config');
 
@@ -18,6 +19,7 @@ function WebServer() {
     var webApp = this.webApp = express();
     var server = http.createServer(webApp);
 
+    var myLogger = new Logger('http.log').init();
 
     //Local variables configuration
     webApp.locals.config = config;
@@ -34,7 +36,7 @@ function WebServer() {
 
     //Routing chain
     webApp.use(timeout(0));
-    webApp.use(logger('combined'));
+    webApp.use(expressLogger('combined', {stream: myLogger.stream}));
     webApp.use(bodyParser.json());
     webApp.use(bodyParser.urlencoded({extended: true}));
 
