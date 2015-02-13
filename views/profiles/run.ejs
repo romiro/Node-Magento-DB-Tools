@@ -1,0 +1,52 @@
+<% layout('../layout'); %>
+
+<% script('/js/db-view.js'); %>
+<% var headerTitle = 'Run Profile' + (profile ? ' <span>'+profile['profile_name']+'</span>' : '<span></span>'); %>
+
+<div id="profile-run" class="database-view">
+    <h2><%- headerTitle %></h2>
+
+    <form id="run-form">
+        <% if (!profile) { %>
+            <div class="form-group">
+                <label for="profile_id">Selected Profile</label>
+                <select id="profile_id" name="profile_id" class="form-control"></select>
+            </div>
+        <% } else { %>
+            <input type="hidden" name="profile_id" value="<%- profile['id'] %>" />
+        <% } %>
+
+        <div class="form-group form-group-radio">
+            <label>Password or Public Key</label>
+
+            <label class="radio-inline">
+                <input type="radio" name="pass-or-key" class="password" value="password" />
+                Use Password
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="pass-or-key" class="key" value="key" checked />
+                Use Local Private Key
+            </label>
+            <div class="form-group password">
+                <label for="password">Password</label>
+                <input type="text" id="password" name="password" class="form-control" disabled />
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button type="button" class="btn btn-warning btn-lg" id="test-button">Test</button>
+            <button type="button" class="btn btn-primary btn-lg" id="run-button">Run</button>
+        </div>
+
+    </form>
+
+    <div>
+        <h3>Messages</h3>
+        <ul class="list-group" id="database-messages"></ul>
+    </div>
+</div>
+
+
+<script>
+    var runProfile = new RunProfile(<%- JSON.stringify(typeof profile !== 'undefined' ? profile : null) %>);
+</script>

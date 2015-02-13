@@ -1,0 +1,34 @@
+<% layout('../layout'); %>
+
+<% script('/js/db-view.js'); %>
+<div id="profiles">
+    <h2>Profiles</h2>
+    <div class="primary-actions">
+        <button class="btn btn-success" id="new-profile">New Profile</button>
+    </div>
+    <ul class="list-group database-view" >
+    </ul>
+</div>
+
+<div id="template" class="profile-template">
+    <li class="list-group-item">
+        <input type="hidden" name="id" class="profile-id" />
+        <div class="profile-label">
+            <span class="client-name">Speck Products</span> -
+            <span class="server-name">web01</span> -
+            <span class="profile-name">asdasd</span>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn profile-run">Run</button>
+            <button type="button" class="btn profile-edit">Edit</button>
+            <button type="button" class="btn profile-delete">Delete</button>
+        </div>
+    </li>
+</div>
+
+<script>
+$(function(){
+    var profilesIndex = new Profiles();
+});
+</script>

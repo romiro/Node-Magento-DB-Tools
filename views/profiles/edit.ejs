@@ -1,0 +1,69 @@
+<% layout('../layout'); %>
+<% script('/js/db-view.js'); %>
+
+<% var headerTitle = action == 'new' ? 'New Profile' : 'Editing Profile <span>'+profile['profile_name']+'</span>'; %>
+
+<div id="profile-edit" class="database-view">
+    <h2><%- headerTitle %></h2>
+
+    <input type="hidden" id="type" value="<%- action %>" />
+
+    <form id="profile-form">
+
+        <% if(action == 'edit') { %>
+            <input type="hidden" name="id" value="<%- profile['id'] %>" />
+        <% } %>
+
+        <div class="form-group">
+            <label for="profile_name">Profile Name</label>
+            <input type="text" class="form-control name" name="profile_name" placeholder="Profile Name" id="profile_name" />
+        </div>
+
+        <div class="form-group">
+            <label for="server_id">Server</label>
+            <select id="server_id" name="server_id" class="form-control server_id"></select>
+        </div>
+
+        <div class="form-group">
+            <label for="magento_path">Path to Magento</label>
+            <input type="text" class="form-control name" name="magento_path" placeholder="Path on server to Magento root" id="magento_path" />
+        </div>
+
+
+        <div class="form-group">
+            <label>Excluded Tables</label>
+            <div class="row">
+                <div class="box-group">
+                    <div class="box-group-content" id="tables-content">
+                        <div class="table-controls">
+                            <a class="select-all">Select All</a> |
+                            <a class="select-none">Select None</a>
+                        </div>
+                        <div style="clear:both;"></div>
+                        <div id="excluded-tables"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn btn-success save-button">Save Profile</button>
+            <button type="button" class="btn btn-success save-button">Save and Run Profile</button>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    $(function(){
+        var type = $('#type').val();
+        if (type === 'new') {
+            var profileNew = new ProfileNew();
+        }
+        else {
+            var profileEdit = new ProfileEdit(<%- JSON.stringify(typeof profile !== 'undefined' ? profile : {}) %>);
+        }
+
+    });
+</script>

@@ -1,6 +1,11 @@
 'use strict';
-var express = require('express');
+
 var http = require('http');
+var util = require('util');
+
+var express = require('express');
+var logger = require('morgan');
+var bodyParser = require('body-parser');
 var engine = require('ejs-locals');
 
 var routes = require('./routes/index');
@@ -17,6 +22,7 @@ function WebServer() {
     webApp.locals.config = config;
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
+    webApp.locals.util = util;
 
     //Views setup
     webApp.engine('ejs', engine);
@@ -26,8 +32,9 @@ function WebServer() {
 
 
     //Routing chain
-    webApp.use(express.logger());
-    webApp.use(express.bodyParser());
+    webApp.use(logger('combined'));
+    webApp.use(bodyParser.json());
+    webApp.use(bodyParser.urlencoded({extended: true}));
 
     routes.use(webApp);
 

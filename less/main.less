@@ -1,4 +1,6 @@
+@import "variables";
 @import "bootstrap/bootstrap";
+
 
 //--------------------
 // Generic styles
@@ -8,6 +10,9 @@ body.wait {
 }
 hr {
     margin: 1em 0;
+}
+.container {
+    padding-bottom: 20px;
 }
 .list-group-item {
     &.bg-primary {
@@ -26,6 +31,9 @@ hr {
     &.bg-danger {
         .bg-variant(@state-danger-bg);
     }
+}
+h2 {
+    .text-primary;
 }
 
 
@@ -54,7 +62,7 @@ div.button {
     padding: 0.5em 2em;
 }
 .box-group-content {
-    display: none;
+//    display: none;
 }
 #tables-toggle {
     cursor: pointer;
@@ -64,12 +72,12 @@ a.select-all, a.select-none {
 }
 
 //--------------------
-// Site Profiles page
+// Model view pages (Profile, Server Client)
 //--------------------
-#profile-template {
+#template {
     display: none;
 }
-#site-profiles {
+.database-view {
     .buttons {
         .save-button {
             float: right;
@@ -78,8 +86,8 @@ a.select-all, a.select-none {
             float: left;
         }
     }
-    .add-profile {
-        label {
+    .add {
+        .form-group>label {
             color: @panel-success-text;
         }
     }
@@ -92,6 +100,56 @@ a.select-all, a.select-none {
         }
     }
 }
+#profiles {
+    .primary-actions {
+        margin: 0 7px 7px;
+    }
+    div.profile-label {
+        float: left;
+        margin: 7px 0 0;
+    }
+    div.actions {
+        float: right;
+    }
+    .list-group-item:after {
+        content:"";
+        display: table;
+        clear: both;
+    }
+}
+
+#profile-edit {
+    div.actions button {
+        margin-right: 20px;
+    }
+}
+
+//--------------------
+// Run Profile page
+//--------------------
+#profile-run {
+    h2 span {
+        display: block;
+        font-size: 80%;
+        color: @brand-tertiary;
+        margin: 10px 0 20px;
+    }
+    .form-group-radio>label:first-child {
+        display: block;
+    }
+    .form-group.password {
+        display: none;
+    }
+    .buttons {
+        margin-top: 40px;
+        button {
+            padding-left: 30px;
+            padding-right: 30px;
+            margin-right: 20px;
+        }
+    }
+}
+
 
 //--------------------
 // Database page
@@ -112,7 +170,7 @@ a.select-all, a.select-none {
 #table-checkboxes-template {
     display: none;
 }
-#table-checkboxes {
+.table-checkboxes {
     label {
         font-size: 80%;
     }

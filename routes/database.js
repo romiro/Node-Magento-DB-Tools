@@ -1,11 +1,14 @@
 var util = require('util');
 
-var SSHConfig = require('../lib/ssh-config-reader');
-
+var sqliteDb = require('../db');
 var DatabaseConnection = require('../lib/database-connection');
 var config = require('../config');
 
-var siteProfiles, siteProfile, sshConfig;
+/**
+ * Global variable to module to ensure that even a new instance, if it were created, can't run twice
+ * @type {boolean}
+ */
+var isRunning = false;
 
 function DatabaseRoute() {}
 
@@ -16,57 +19,34 @@ DatabaseRoute.prototype.use = function(webApp) {
         downloadPath: config.general.downloadPath
     };
 
-    siteProfiles = webApp.locals.siteProfiles;
-
-    //Auto DB Sanitizer & Downloader
-    webApp.get('/database', function(req, resp){
-        resp.render('database');
-    });
-
     webApp.post('/testDatabaseConnection', function(req, resp) {
-        var options = util._extend(defaultOptions);
-        options.type = 'test';
-        options.passOrKey = req.body['pass-or-key'];
-        options.password = req.body['password'];
-        options.ignoredTables = req.body['tables'];
-
-        siteProfile = options.siteProfile = siteProfiles.get(req.body['site-profile']);
-        sshConfig = options.sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
-
-        var db = new DatabaseConnection();
-        var returnJson = {messages:[]};
-
-        db.on('error', function(error){
-            console.log('ERROR EVENT: %s', error);
-            returnJson['error'] = error;
-            resp.json(returnJson);
-        });
-
-        db.on('message', function(message){
-            console.log(message);
-            returnJson.messages.push(message);
-        });
-
-        db.on('finish', function(){
-            db.conn.end();
-            resp.json(returnJson);
-        });
-
-        db.start(options);
+        handleRequest(req, resp, 'test');
     });
 
     webApp.post('/runDatabaseConfiguration', function(req, resp){
-        var options = util._extend(defaultOptions);
-        options.type = 'run';
-        options.passOrKey = req.body['pass-or-key'];
-        options.password = req.body['password'];
-        options.ignoredTables = req.body['tables'];
+        handleRequest(req, resp, 'run');
+    });
 
-        siteProfile = options.siteProfile = siteProfiles.get(req.body['site-profile']);
-        sshConfig = options.sshConfig = SSHConfig.getHostByName(siteProfile['sshConfigName']);
-
-        var db = new DatabaseConnection();
+    function handleRequest(req, resp, type) {
         var returnJson = {messages:[]};
+
+        if (isRunning) {
+            returnJson['error'] = 'Dump is already running. Check log output if you think this is not the case, and restart the application if so';
+            resp.json(returnJson);
+        }
+
+        var params = req.body;
+        var options = util._extend(defaultOptions);
+
+        //Parse incoming parameters
+        options.type = type;
+        options.passOrKey = params['pass-or-key'];
+        if (options.passOrKey == 'password') {
+            options.password = params['password'];
+        }
+
+        //Set up the DB object
+        var db = new DatabaseConnection();
 
         db.on('error', function(error){
             returnJson['error'] = error;
@@ -82,11 +62,16 @@ DatabaseRoute.prototype.use = function(webApp) {
         db.on('finish', function(){
             console.log('DatabaseConnection :: FINISH');
             resp.json(returnJson);
+            isRunning = false;
         });
 
-        db.start(options);
-    });
+        //Get the profile from the DB and start the dump
+        sqliteDb.Profile.getByJoined('Profile.id', params['profile_id'], function(data){
 
+            options.siteProfile = data[0];
+            db.start(options);
+        });
+    }
 };
 
 module.exports = new DatabaseRoute();

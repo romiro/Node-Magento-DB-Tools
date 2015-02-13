@@ -76,13 +76,12 @@ function DatabasePage() {
                 event.stopPropagation();
                 return false;
             }
-            isDbConnRunning = true;
 
             var $inputs = $('#database-form').find(':input').not(':button');
             if (!Tools.validate($inputs, $container)) {
-                isDbConnRunning = false;
                 return false;
             }
+            isDbConnRunning = true;
 
             var url;
             if ($(this).is('#run-config')) {
@@ -118,11 +117,14 @@ function DatabasePage() {
                     if (status == 'parsererror') {
                         console.error('Error with response from database connection test:', response, errorThrown);
                     }
+                    else {
+                        console.log('Unknown error from profile run: ', response, errorThrown);
+                    }
                 },
-                complete: function() {
+                complete: function(jqXHR, textStatus) {
                     Tools.hideWait();
-                    isDbConnRunning = false;
-                    console.log('DatabaseConnection::oncomplete');
+                    //isDbConnRunning = false;
+                    console.log('DatabaseConnection::oncomplete', 'jqXHR:', jqXHR, 'textStatus:', textStatus);
                 }
             });
         });
