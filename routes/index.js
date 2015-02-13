@@ -192,8 +192,8 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
-    webApp.get(/\/Profiles\/run\/?(.*)/g, function(req, resp){
-        var id = req.route.params[0];
+    webApp.get("/Profiles/run/:id", function(req, resp){
+        var id = req.params["id"];
         if (!id) {
             resp.render('profiles/run', {profile: null});
         }
