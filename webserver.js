@@ -6,6 +6,7 @@ var util = require('util');
 var express = require('express');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
+var timeout = require('connect-timeout');
 var engine = require('ejs-locals');
 
 var routes = require('./routes/index');
@@ -32,6 +33,7 @@ function WebServer() {
 
 
     //Routing chain
+    webApp.use(timeout(0));
     webApp.use(logger('combined'));
     webApp.use(bodyParser.json());
     webApp.use(bodyParser.urlencoded({extended: true}));

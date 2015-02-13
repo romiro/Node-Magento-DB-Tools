@@ -28,6 +28,7 @@ DatabaseRoute.prototype.use = function(webApp) {
     });
 
     function handleRequest(req, resp, type) {
+        req.clearTimeout();
         var returnJson = {messages:[]};
 
         if (isRunning) {

@@ -1,7 +1,9 @@
 <% layout('../layout'); %>
 
 <% script('/js/db-view.js'); %>
-<% var headerTitle = 'Run Profile' + (profile ? ' <span>'+profile['profile_name']+'</span>' : '<span></span>'); %>
+<% var headerTitle = 'Run Profile' + (profile ?
+        ' <span>'+profile['client_name']+' - '+profile['server_name']+' - '+profile['profile_name']+'</span>' :
+        '<span></span>'); %>
 
 <div id="profile-run" class="database-view">
     <h2><%- headerTitle %></h2>
