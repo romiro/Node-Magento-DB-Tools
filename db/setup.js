@@ -1,9 +1,13 @@
+var fs = require('fs');
 var sqlite3 = require('sqlite3');
 var _ = require('underscore');
 
 module.exports = function(callback) {
+    var db;
 
-    var db = new sqlite3.Database('db/storage/main.sqlite', setupDb);
+    fs.mkdir('db/storage', function(err){
+        db = new sqlite3.Database('db/storage/main.sqlite', setupDb);
+    });
 
     function setupDb(err) {
         if (err) throw err;
