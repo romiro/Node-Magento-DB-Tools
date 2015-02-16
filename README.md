@@ -15,7 +15,7 @@ After cloning down, run
     
 within the working directory to install the preqruisites.
 
-Copy, rename, and modify config.js.sample to config.js and adjust values as needed (reminder that the mysql credentials are as they would be when connecting through the configured SSH connection)
+Copy, rename, and modify config.js.sample to config.js and adjust values as needed
 
 After that, you need to setup the Sqlite database. This can be accomplished with:
 

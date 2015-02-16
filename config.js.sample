@@ -4,14 +4,24 @@ config.general = {};
 config.ssh = {};
 config.tunnel = {};
 config.web = {};
+//DO NOT EDIT ABOVE THIS LINE
 
+
+
+//Path to where DBs should be downloaded
 config.general.downloadPath = '/path/to/downloads';
 
+//Passphrase for your public key, if used
 config.ssh.passphrase = 'key_passphrase';
 
-//Port that SSH <-> MySQL tunnel will use on local machine
+//Port that SSH <-> MySQL tunnel will use on local machine - This is irrelevant past that it can't be a port
+//your machine is currently listening to
 config.tunnel.port = 12973;
 
+//Port that the webserver will run on
 config.web.port = 8800;
 
+
+
+//DO NOT EDIT BELOW THIS LINE
 module.exports = config;
