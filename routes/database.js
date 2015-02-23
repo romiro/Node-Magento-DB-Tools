@@ -20,11 +20,11 @@ DatabaseRoute.prototype.use = function(webApp) {
     };
 
     webApp.post('/testDatabaseConnection', function(req, resp) {
-        handleRequest(req, resp, 'test');
+        return handleRequest(req, resp, 'test');
     });
 
     webApp.post('/runDatabaseConfiguration', function(req, resp){
-        handleRequest(req, resp, 'run');
+        return handleRequest(req, resp, 'run');
     });
 
     function handleRequest(req, resp, type) {
@@ -34,6 +34,7 @@ DatabaseRoute.prototype.use = function(webApp) {
         if (isRunning) {
             returnJson['error'] = 'Dump is already running. Check log output if you think this is not the case, and restart the application if so';
             resp.json(returnJson);
+            return false;
         }
 
         var params = req.body;
@@ -67,7 +68,6 @@ DatabaseRoute.prototype.use = function(webApp) {
 
         //Get the profile from the DB and start the dump
         sqliteDb.Profile.getByJoined('Profile.id', params['profile_id'], function(data){
-
             options.siteProfile = data[0];
             db.start(options);
         });

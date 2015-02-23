@@ -92,17 +92,7 @@ To see utilize the .map file in your browser, run this from project root: cd pub
     * Possibly need to refactor local file download to read piece by piece and write file to local machine rather than storing the entire thing into memory, as node has some hardcoded memory limits that some DB dumps would definitely surpass
 
 * Web Frontend
-    * Client
-        * Route function, related template file
-        * Mapped list, add, delete to frontend display and js
-    * Server
-        * Route function, related template file
-        * Mapped list, add, delete to frontend display and js
-    * Profile
-        * Route function, related template file
-        * Mapped list, add, delete to frontend display and js
-    * Core frontend JS
-        * Super object to handle generic rendering of all three models
+    * Phase 1 DONE!
 
 * Command Line Access
     * Phase 1 DONE!
@@ -132,7 +122,7 @@ To see utilize the .map file in your browser, run this from project root: cd pub
     * Export database again to another configured location (this will be where devs pick up the file for use - the means for this are TBD)
 
 * Misc
-    * Logging to file - both webserver hits and the output of a profile run
+    * ~~Logging to file - both webserver hits and the output of a profile run~~
     * Socket.io re-integration to output the messages during the dump directly to the web browser
      
 * Long Term Plans, New Features

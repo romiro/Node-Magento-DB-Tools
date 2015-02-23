@@ -18,6 +18,7 @@ function WebServer() {
 
     var webApp = this.webApp = express();
     var server = http.createServer(webApp);
+    server.timout = 86400000; //Hopefully a database won't take a day to download
 
     var myLogger = new Logger('http.log').init();
 
