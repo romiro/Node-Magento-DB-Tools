@@ -36,12 +36,14 @@ function WebServer() {
 
 
     //Routing chain
-    webApp.use(timeout('86400s'));
+    webApp.use(timeout('86400000ms'));
     webApp.use(expressLogger('combined', {stream: myLogger.stream}));
     webApp.use(bodyParser.json());
+    webApp.use(haltOnTimedout);
     webApp.use(bodyParser.urlencoded({extended: true}));
 
     routes.use(webApp);
+    webApp.use(haltOnTimedout);
 
     webApp.use(express.static(__dirname + '/public'));
 
@@ -55,6 +57,10 @@ function WebServer() {
         server.listen(port);
         console.log('Web server now listening for connections on '+port);
     };
+
+    function haltOnTimedout(req, res, next){
+        if (!req.timedout) next();
+    }
 
     function respNotFound(req, resp) {
         resp.status(404);
