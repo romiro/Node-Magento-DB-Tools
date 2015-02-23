@@ -36,7 +36,7 @@ function WebServer() {
 
 
     //Routing chain
-    webApp.use(timeout(0));
+    webApp.use(timeout('86400s'));
     webApp.use(expressLogger('combined', {stream: myLogger.stream}));
     webApp.use(bodyParser.json());
     webApp.use(bodyParser.urlencoded({extended: true}));
