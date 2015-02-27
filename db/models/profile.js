@@ -1,5 +1,6 @@
 var util = require('util');
 var Model = require('../model');
+var _ = require('underscore');
 
 function Profile(db) {
     this.tableName = 'Profile';
@@ -10,6 +11,7 @@ function Profile(db) {
 util.inherits(Profile, Model);
 
 Profile.prototype.getByJoined = function(column, search, callback){
+    var self = this;
     var conn = this.db.connection;
     var statement = util.format('SELECT Profile.id as id, ' +
         'profile_name, magento_path, excluded_tables, tables, ' +
@@ -26,11 +28,12 @@ Profile.prototype.getByJoined = function(column, search, callback){
 
     conn.all(statement, [search], function(err, rows){
         if (err) throw err;
-        callback(rows);
+        callback(self.afterGetJoined(rows));
     });
 };
 
 Profile.prototype.getAllJoined = function(callback){
+    var self = this;
     var conn = this.db.connection;
     var statement = 'SELECT Profile.id as id, ' +
         'profile_name, magento_path, excluded_tables, tables, ' +
@@ -42,8 +45,16 @@ Profile.prototype.getAllJoined = function(callback){
 
     conn.all(statement, function(err, rows){
         if (err) throw err;
-        callback(rows);
+        callback(self.afterGetJoined(rows));
     });
+};
+
+Profile.prototype.afterGetJoined = function(rows) {
+    _.each(rows, function(row, i){
+        rows[i]['excluded_tables'] = JSON.parse(rows[i]['excluded_tables']);
+        rows[i]['tables'] = JSON.parse(rows[i]['tables']);
+    });
+    return rows;
 };
 
 module.exports = Profile;

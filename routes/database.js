@@ -28,7 +28,9 @@ DatabaseRoute.prototype.use = function(webApp) {
     });
 
     function handleRequest(req, resp, type) {
+        console.log('Database dump request coming in...');
         req.clearTimeout();
+        req.connection.setTimeout(0);
         var returnJson = {messages:[]};
 
         if (isRunning) {
@@ -69,6 +71,7 @@ DatabaseRoute.prototype.use = function(webApp) {
         //Get the profile from the DB and start the dump
         sqliteDb.Profile.getByJoined('Profile.id', params['profile_id'], function(data){
             options.siteProfile = data[0];
+            options.ignoredTables = options.siteProfile['excluded_tables'];
             db.start(options);
         });
     }

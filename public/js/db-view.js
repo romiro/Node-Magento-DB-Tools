@@ -453,23 +453,20 @@ var RunProfile = DatabaseViewAbstract.subClass({
     init: function(profile) {
         var self = this;
         this.$container = $('#profile-run');
-        this.getDataFrom('Profiles', function(data){
-            self.profiles = data;
-            self.finish();
-        });
+        self.finish();
+        //this.getDataFrom('Profiles', function(data){
+        //    self.profiles = data;
+        //    self.finish();
+        //});
     },
 
     render: function() {
-        var $profileSelect = $('#profile_id');
-        $profileSelect.append('<option value="">Please select a profile...</option>');
-        $.each(this.profiles, function(i, val){
-            var label = Tools.format('%s - %s - %s', val['client_name'], val['server_name'], val['profile_name']);
-            $profileSelect.append(Tools.format('<option value="%s">%s</option>', val['id'], label));
-        });
-    },
-
-    setupEvents: function() {
-        var self = this;
+        //var $profileSelect = $('#profile_id');
+        //$profileSelect.append('<option value="">Please select a profile...</option>');
+        //$.each(this.profiles, function(i, val){
+        //    var label = Tools.format('%s - %s - %s', val['client_name'], val['server_name'], val['profile_name']);
+        //    $profileSelect.append(Tools.format('<option value="%s">%s</option>', val['id'], label));
+        //});
 
         //Show/hide password input
         $('.form-group-radio input[type=radio]').on('click', function(){
@@ -482,6 +479,10 @@ var RunProfile = DatabaseViewAbstract.subClass({
                 $('.form-group.password input').attr('disabled', true);
             }
         });
+    },
+
+    setupEvents: function() {
+        var self = this;
 
         //Run / Test buttons
         var isDbConnRunning = false;

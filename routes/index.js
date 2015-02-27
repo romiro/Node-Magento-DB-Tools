@@ -135,8 +135,10 @@ Routes.prototype.use = function (webApp) {
         resp.render('profiles/edit', {action: 'new'});
     });
 
-    webApp.get(/\/Profiles\/edit\/(.*)/g , function(req, resp){
-        var id = req.route.params[0];
+    //webApp.get(/\/Profiles\/edit\/(.*)/g , function(req, resp){
+    webApp.get('/Profiles/edit/:id', function(req, resp, next){
+        var id = req.params['id'];
+        if (!id) next();
         sqliteDb.Profile.getByJoined('Profile.id', id, function(data){
             resp.render('profiles/edit', {action: 'edit', profile: data[0]});
         });
