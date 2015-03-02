@@ -3,6 +3,12 @@ Node-Magento-DB-Tools
 
 node.js web application that assists with database dumping, santization, and more.
 
+Requirements
+---------------
+* Linux (tested) or Mac (untested), will not work in Windows
+* scp
+* node v0.12.0 (developed on this version, using other versions may break application)
+
 
 Getting Started
 ---------------
@@ -13,7 +19,7 @@ After cloning down, run
     
     npm install
     
-within the working directory to install the preqruisites.
+within the working directory to install the prerequisites.
 
 Copy, rename, and modify config.js.sample to config.js and adjust values as needed
 

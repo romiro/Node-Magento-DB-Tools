@@ -433,13 +433,8 @@ var ProfileEdit = ProfileNew.subClass({
         $('input#magento_path').val(this.profile['magento_path']);
         $('select#server_id').val(this.profile['server_id']);
 
-        try {
-            var excludedTables = JSON.parse(this.profile['excluded_tables']);
-        }
-        catch (e) {
-            alert("Problem parsing JSON data for excluded tables. Please review data or contact a dev: \n"+e);
-            return false;
-        }
+        var excludedTables = this.profile['excluded_tables'];
+
         $('input.excluded-table-checkbox').attr('checked', false);
 
         $.each(excludedTables, function(key, val){
