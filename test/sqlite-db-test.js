@@ -44,7 +44,11 @@ describe('sqlite database', function(){
             db.connect(dbFile);
             db.connection.serialize(function(){
 
-                db.run('CREATE TABLE Client ("id" INTEGER PRIMARY KEY ASC, "client_code" TEXT, "client_name" TEXT);');
+                db.run('CREATE TABLE Client (' +
+                'id INTEGER PRIMARY KEY ASC,' +
+                'client_code TEXT,' +
+                'client_name TEXT,' +
+                'client_color TEXT);', handleCallback);
 
                 db.run('CREATE TABLE Server ('+
                 'id INTEGER PRIMARY KEY ASC,'+
@@ -52,7 +56,7 @@ describe('sqlite database', function(){
                 'server_name TEXT,'+
                 'ssh_host TEXT,'+
                 'ssh_username TEXT'+
-                ');');
+                ');', handleCallback);
 
                 db.run('CREATE TABLE Profile ('+
                 'id INTEGER PRIMARY KEY ASC,'+
@@ -60,10 +64,16 @@ describe('sqlite database', function(){
                 'profile_name TEXT,'+
                 'magento_path TEXT,'+
                 'tables TEXT,'+
-                'excluded_tables TEXT'+
-                ');', function(){
+                'excluded_tables TEXT,' +
+                'position INTEGER'+
+                ');', function(err){
+                    handleCallback.call(this, err);
                     done();
                 });
+
+                function handleCallback(err) {
+                    if (err) throw err;
+                }
             });
         });
 

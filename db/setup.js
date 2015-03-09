@@ -13,7 +13,11 @@ module.exports = function(callback) {
         if (err) throw err;
         db.serialize(function(){
 
-            db.run('CREATE TABLE Client ("id" INTEGER PRIMARY KEY ASC, "client_code" TEXT, "client_name" TEXT);', handleCallback);
+            db.run('CREATE TABLE Client (' +
+            'id INTEGER PRIMARY KEY ASC,' +
+            'client_code TEXT,' +
+            'client_name TEXT,' +
+            'client_color TEXT);', handleCallback);
 
             db.run('CREATE TABLE Server ('+
             'id INTEGER PRIMARY KEY ASC,'+
@@ -29,7 +33,8 @@ module.exports = function(callback) {
             'profile_name TEXT,'+
             'magento_path TEXT,'+
             'tables TEXT,'+
-            'excluded_tables TEXT'+
+            'excluded_tables TEXT,' +
+            'position INTEGER'+
             ');', function(err){
                 handleCallback.call(this, err);
                 callback();

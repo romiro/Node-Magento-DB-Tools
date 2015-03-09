@@ -15,7 +15,7 @@ Server.prototype.getByJoined = function(column, search, callback){
     var statement = util.format(
         'SELECT Server.id as id, server_name, ssh_host, ssh_username, ' +
         'Client.id as client_id, client_code, client_name ' +
-        'FROM Server INNER JOIN Client ON Server.client_id = Client.id' +
+        'FROM Server INNER JOIN Client ON Server.client_id = Client.id ' +
         'WHERE %s = ?',
         column
     );

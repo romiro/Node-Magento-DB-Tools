@@ -51,8 +51,12 @@ Profile.prototype.getAllJoined = function(callback){
 
 Profile.prototype.afterGetJoined = function(rows) {
     _.each(rows, function(row, i){
-        rows[i]['excluded_tables'] = JSON.parse(rows[i]['excluded_tables']);
-        rows[i]['tables'] = JSON.parse(rows[i]['tables']);
+        if (rows[i]['excluded_tables']) {
+            rows[i]['excluded_tables'] = JSON.parse(rows[i]['excluded_tables']);
+        }
+        if (rows[i]['tables']) {
+            rows[i]['tables'] = JSON.parse(rows[i]['tables']);
+        }
     });
     return rows;
 };
