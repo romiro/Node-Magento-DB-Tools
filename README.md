@@ -93,17 +93,23 @@ To see utilize the .map file in your browser, run this from project root: cd pub
     * ~~Currently undergoing massive overhaul into a 3 table sqlite data structure, separating Client, Server, and Profile concepts~~
         
 * DB Tool
-    * ~~After site profile refactor, DB tool will need its data endpoints changed to match the refactoring~~
-    * When DB tool finishes a dump and the download of the file, it should delete the file from the remote server
-    * Possibly need to refactor local file download to read piece by piece and write file to local machine rather than storing the entire thing into memory, as node has some hardcoded memory limits that some DB dumps would definitely surpass
+    * ~~When DB tool finishes a dump and the download of the file, it should delete the file from the remote server~~
+    * ~~Possibly need to refactor local file download to read piece by piece and write file to local machine rather than storing the entire thing into memory, as node has some hardcoded memory limits that some DB dumps would definitely surpass~~
+    * (nice to have) Run SCP through pty emulation so that the progress rate can be parsed out to the end user
+    * (nice to have) Socket.io integration to display messages as they happen to end user, while making initial request instantaneous 
 
+* Data Models
+    * New field for Client: color
+    * New field for Profile: position
+    
 * Web Frontend
-    * Phase 1 DONE!
+    * Color picker for new field 'color' on Client object to define a color per client for quick association (sorry Jim)
+    * Draggable sorting on Site Profiles page, relating to new 'position' field
 
 * Command Line Access
-    * Phase 1 DONE!
+    * Nothing yet
     
-* Local database import and making dev-ready
+* (PHASE II) Local database import and making dev-ready 
     * Import downloaded mysqldump file into local, temporary, database
     * After import, connect to local database server and temporary database
     * Run generic SQL statements against core_config_data which
@@ -126,10 +132,6 @@ To see utilize the .map file in your browser, run this from project root: cd pub
         * After generic statements are complete, search for this file in the named directory.
             * If exists, require() file and run a generic method which initiates script file against already-connected DB
     * Export database again to another configured location (this will be where devs pick up the file for use - the means for this are TBD)
-
-* Misc
-    * ~~Logging to file - both webserver hits and the output of a profile run~~
-    * Socket.io re-integration to output the messages during the dump directly to the web browser
      
 * Long Term Plans, New Features
     * PHP Info
