@@ -78,11 +78,11 @@ jQuery(function(){
             var $tablesContent = $('#tables-content');
             if (!$tablesContent.hasClass('show')) {
                 $tablesContent.addClass('show').slideDown();
-                $(this).removeClass('glyphicon-collapse-down').addClass('glyphicon-collapse-up');
+                $(this).find('span').removeClass('glyphicon-collapse-down').addClass('glyphicon-collapse-up');
             }
             else {
                 $tablesContent.removeClass('show').slideUp();
-                $(this).removeClass('glyphicon-collapse-up').addClass('glyphicon-collapse-down');
+                $(this).find('span').removeClass('glyphicon-collapse-up').addClass('glyphicon-collapse-down');
             }
         });
 
