@@ -292,6 +292,10 @@ var Profiles = DatabaseView.subClass({
         var self = this;
         $.each(this.data, function(i, val){
             var $row = self.$template.clone();
+            if (val['client_color']) {
+                $row.find('.client-color').css({"background-color": val['client_color']});
+            }
+
             $row.find('.client-name').text(val['client_name']);
             $row.find('.server-name').text(val['server_name']);
             $row.find('.profile-name').text(val['profile_name']);

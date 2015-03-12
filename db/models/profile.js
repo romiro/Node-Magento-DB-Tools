@@ -37,7 +37,7 @@ Profile.prototype.getAllJoined = function(callback){
     var conn = this.db.connection;
     var statement = 'SELECT Profile.id as id, ' +
         'profile_name, magento_path, excluded_tables, tables, ' +
-        'Client.id as client_id, client_name, client_code, ' +
+        'Client.id as client_id, client_color, client_name, client_code, ' +
         'Server.id as server_id, server_name, ssh_host, ssh_username ' +
         'FROM Profile ' +
         'INNER JOIN Server ON Profile.server_id = Server.id ' +
