@@ -399,18 +399,18 @@ var ProfileNew = DatabaseViewAbstract.subClass({
 
         //TODO: vvvvv Get a working dropdown again vvvvv
 
-        //$('#table-checkboxes-container').on('click', '.tables-toggle', function(event){
-        //    var $tablesContent = $(event.delegateTarget).find('#tables-content');
-        //
-        //    if (!$tablesContent.hasClass('show')) {
-        //        $tablesContent.addClass('show').slideDown();
-        //        $(this).find('span').removeClass('glyphicon-expand').addClass('glyphicon-collapse-down');
-        //    }
-        //    else {
-        //        $tablesContent.removeClass('show').slideUp();
-        //        $(this).find('span').removeClass('glyphicon-collapse-down').addClass('glyphicon-expand');
-        //    }
-        //});
+        $('.tables-toggle').on('click', function(event){
+            var $tablesContent = $(this).parent().find('#tables-content');
+
+            if (!$tablesContent.hasClass('show')) {
+                $tablesContent.addClass('show').slideDown();
+                $(this).find('span').removeClass('glyphicon-collapse-down').addClass('glyphicon-collapse-up');
+            }
+            else {
+                $tablesContent.removeClass('show').slideUp();
+                $(this).find('span').removeClass('glyphicon-collapse-up').addClass('glyphicon-collapse-down');
+            }
+        });
     }
 });
 
