@@ -96,10 +96,14 @@ Routes.prototype.use = function (webApp) {
 
     webApp.post('/Servers/save', function(req, resp){
         var params = req.body;
-        var sshEntry = SSHConfig.getHostByName(params['ssh_config']);
-        params['ssh_host'] = sshEntry['host'];
-        params['ssh_username'] = sshEntry['user'];
-        delete params['ssh_config'];
+
+        if (params['ssh_config']) {
+            var sshEntry = SSHConfig.getHostByName(params['ssh_config']);
+            params['ssh_host'] = sshEntry['host'];
+            params['ssh_username'] = sshEntry['user'];
+            delete params['ssh_config'];
+        }
+
         if (params.id) {
             sqliteDb.Server.update(params, function(){
                 resp.json({});
