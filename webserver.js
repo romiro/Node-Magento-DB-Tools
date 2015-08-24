@@ -11,7 +11,6 @@ var engine = require('ejs-locals');
 
 var Logger = require('./lib/logger');
 var routes = require('./routes/index');
-var config = require('./config');
 
 
 function WebServer() {
@@ -23,7 +22,7 @@ function WebServer() {
     var myLogger = new Logger('http.log').init();
 
     //Local variables configuration
-    webApp.locals.config = config;
+    webApp.locals.config = getConfig();
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
     webApp.locals.util = util;
@@ -66,6 +65,19 @@ function WebServer() {
         resp.status(404);
         resp.render('errors/404');
         resp.end();
+    }
+
+    /**
+     * Helper function to detect env vars that override the config
+     * @return {*}
+     */
+    function getConfig() {
+        var config = require('./config');
+
+        config.general.downloadPath = process.env.CONFIG_GENERAL_DOWNLOADPATH || config.general.downloadPath;
+        config.web.port = process.env.CONFIG_WEB_PORT || config.web.port;
+
+        return config;
     }
 }
 

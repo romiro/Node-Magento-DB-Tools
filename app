@@ -8,5 +8,6 @@ catch (e) {
     }
     process.exit();
 }
-var cli = require('./lib/cli');
+
+require('./lib/cli');
 
