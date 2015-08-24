@@ -97,6 +97,7 @@ To see utilize the .map file in your browser, run this from project root: cd pub
     * ~~Possibly need to refactor local file download to read piece by piece and write file to local machine rather than storing the entire thing into memory, as node has some hardcoded memory limits that some DB dumps would definitely surpass~~
     * (nice to have) Run SCP through pty emulation so that the progress rate can be parsed out to the end user
     * (nice to have) Socket.io integration to display messages as they happen to end user, while making initial request instantaneous 
+    * Add sed magic to the final generated dump command to remove definers: `sed 's/\/\*!50017 DEFINER=`.*`@`.*`\*\///'`
 
 * Data Models
     * New field for Client: color
