@@ -53,6 +53,14 @@ var Tools = {
         });
     },
 
+    /**
+     * Main validation function
+     * @TODO Make this much friendlier and extensible, use case in ProfileNew.save()
+     *
+     * @param $inputs jQuery
+     * @param $container jQuery
+     * @return {boolean}
+     */
     validate: function validate($inputs, $container) {
         var errors = false;
         $container.find('.error').remove();
@@ -66,10 +74,14 @@ var Tools = {
         });
 
         if (errors) {
-            Tools.addAlert('Please fix the errors and re-submit', {className:'error', type:'danger', container: $container});
+            Tools.addValidationAlert('Please fix the errors and re-submit', $container);
             return false;
         }
         return true;
+    },
+
+    addValidationAlert: function (message, $container){
+        Tools.addAlert(message, {className:'error', type:'danger', container: $container, clear: true});
     },
 
     /**

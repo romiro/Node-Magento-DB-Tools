@@ -333,6 +333,11 @@ var ProfileNew = DatabaseViewAbstract.subClass({
         var self = this;
         //Save button
         $('button.save-button').on('click', function(event){
+
+            if ( /[^a-zA-Z0-9]/.test( $('#profile_name').val() ) ) {
+                Tools.addValidationAlert('Profile name can only be alphanumeric.');
+                return false;
+            }
             var $inputs = $('form#profile-form').find(':input').not(':button');
             if (!Tools.validate($inputs, self.$container)) {
                 window.scrollTo(0,0);

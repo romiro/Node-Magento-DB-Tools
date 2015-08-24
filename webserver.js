@@ -16,13 +16,14 @@ var routes = require('./routes/index');
 function WebServer() {
 
     var webApp = this.webApp = express();
+    var config;
     var server = http.createServer(webApp);
     server.timout = 86400000; //Hopefully a database won't take a day to download
 
     var myLogger = new Logger('http.log').init();
 
     //Local variables configuration
-    webApp.locals.config = getConfig();
+    webApp.locals.config = config = getConfig();
     webApp.locals.title = 'Magento MySQL Database Multi-Tool';
     webApp.locals.shortTitle = 'Magento DB Tools';
     webApp.locals.util = util;

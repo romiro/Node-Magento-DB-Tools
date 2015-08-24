@@ -56,6 +56,9 @@ Routes.prototype.use = function (webApp) {
 
     webApp.post('/Clients/save', function(req, resp){
         var params = req.body;
+
+        params['client_code'] = params['client_code'].toUpperCase();
+
         if (params.id) {
             sqliteDb.Client.update(params, function(){
                 resp.json({});
@@ -168,6 +171,7 @@ Routes.prototype.use = function (webApp) {
     webApp.post('/Profiles/save', function(req, resp){
         var params = req.body;
         params['excluded_tables'] = JSON.stringify(params['excluded_tables']);
+        params['profile_name'] = params['profile_name'].toLowerCase();
 
         if (params.id) {
             sqliteDb.Profile.update(params, function(){
