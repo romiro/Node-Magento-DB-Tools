@@ -217,7 +217,8 @@ Routes.prototype.use = function (webApp) {
     dbRoutes.use(webApp);
 
     webApp.get(/\/getSshConfig|\/SshConfig\/getAll/, function(req, resp){
-        resp.json(SSHConfig.getHosts());
+        var filepath = process.env['CONFIG_GENERAL_SSHCONFIGFILE'] || false;
+        resp.json(SSHConfig.getHosts(filepath));
     }.bind(webApp));
 
     webApp.get('/ExcludedTables/getAll', function(req, resp){
