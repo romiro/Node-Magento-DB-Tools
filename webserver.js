@@ -75,8 +75,8 @@ function WebServer() {
     function getConfig() {
         var config = require('./config');
 
-        config.general.downloadPath = process.env.CONFIG_GENERAL_DOWNLOADPATH || config.general.downloadPath;
-        config.web.port = process.env.CONFIG_WEB_PORT || config.web.port;
+        config.general.downloadPath = process.env['CONFIG_GENERAL_DOWNLOADPATH'] || config.general.downloadPath;
+        config.web.port = process.env['CONFIG_WEB_PORT'] || config.web.port;
 
         return config;
     }
