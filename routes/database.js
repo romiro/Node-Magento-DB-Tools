@@ -64,7 +64,9 @@ DatabaseRoute.prototype.use = function(webApp) {
         });
 
         db.on('finish', function(){
-            resp.json(returnJson);
+            if (resp.finished !== true) {
+                resp.json(returnJson);
+            }
             isRunning = false;
         });
 
