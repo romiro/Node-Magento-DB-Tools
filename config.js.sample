@@ -11,8 +11,11 @@ config.web = {};
 //Path to where DBs should be downloaded
 config.general.downloadPath = '/path/to/downloads';
 
-//Custom path where an .ssh/config file is located. Leave blank for default.
-config.general.sshConfigFile = '';
+//Custom path where an .ssh/config file is located. Leave blank for system default.
+config.ssh.configFile = '';
+
+//Custom location of web app user's private key file. Leave blank for system default.
+config.ssh.privKey = '';
 
 //Passphrase for your public key, if used
 config.ssh.passphrase = 'key_passphrase';
