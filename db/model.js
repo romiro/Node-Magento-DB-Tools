@@ -26,6 +26,10 @@ Model.prototype.getAll = function(callback) {
     });
 };
 
+Model.prototype.getAllJoined = function(callback) {
+    this.getAll(callback);
+};
+
 Model.prototype.getBy  = function(column, search, callback){
     var conn = this.db.connection;
 

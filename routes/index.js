@@ -42,15 +42,31 @@ Routes.prototype.use = function (webApp) {
 
 
     /**
-     * Client Routes
+     * Client/Server/Profile Routes
+     * (these look uglier if you removed the duplicate code in the regexes. a lot uglier.)
      */
-    webApp.get('/Clients', function(req, resp){
-        resp.render('clients');
+
+    webApp.get(/^\/(Clients|Servers|Profiles)$/, function(req, resp){
+        var viewName = req.params[0].toLowerCase();
+        resp.render(viewName);
     });
 
-    webApp.get('/Clients/getAll', function(req, resp){
-        sqliteDb.Client.getAll(function(data){
+    webApp.get(/^\/(Clients|Servers|Profiles)\/getAll$/, function(req, resp){
+        var type = req.params[0].slice(0, -1);
+        sqliteDb[type].getAllJoined(function(data){
             resp.json(data);
+        });
+    });
+
+    webApp.post(/^\/(Clients|Servers|Profiles)\/delete/, function(req, resp){
+        var type = req.params[0].slice(0, -1);
+        var id = req.body['id'];
+        if (!id) {
+            resp.end('Id is not set');
+            return false;
+        }
+        sqliteDb[type].deleteBy('id', id, function(numChanges){
+            resp.end();
         });
     });
 
@@ -72,30 +88,10 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
-    webApp.post('/Clients/delete', function(req, resp){
-        var id = req.body['id'];
-        if (!id) {
-            resp.end('Id is not set');
-            return false;
-        }
-        sqliteDb.Client.deleteBy('id', id, function(numChanges){
-            resp.end();
-        });
-    });
-
 
     /**
      * Server Routes
      */
-    webApp.get('/Servers', function(req, resp){
-        resp.render('servers');
-    });
-
-    webApp.get('/Servers/getAll', function(req, resp){
-        sqliteDb.Server.getAllJoined(function(data){
-            resp.json(data);
-        });
-    });
 
     webApp.post('/Servers/save', function(req, resp){
         var params = req.body;
@@ -120,23 +116,9 @@ Routes.prototype.use = function (webApp) {
         }
     });
 
-    webApp.post('/Servers/delete', function(req, resp){
-        var id = req.body['id'];
-        if (!id) {
-            resp.end('Id is not set');
-            return false;
-        }
-        sqliteDb.Server.deleteBy('id', id, function(numChanges){
-            resp.end();
-        });
-    });
-
     /**
      * Profile Routes
      */
-    webApp.get('/Profiles', function(req, resp){
-        resp.render('profiles/index');
-    });
 
     webApp.get('/Profiles/new', function(req, resp){
         resp.render('profiles/edit', {action: 'new'});
@@ -161,13 +143,7 @@ Routes.prototype.use = function (webApp) {
             });
         }
     });
-
-    webApp.get('/Profiles/getAll', function(req, resp){
-        sqliteDb.Profile.getAllJoined(function(data){
-            resp.json(data);
-        });
-    });
-
+    
     webApp.post('/Profiles/save', function(req, resp){
         var params = req.body;
         params['excluded_tables'] = JSON.stringify(params['excluded_tables']);
