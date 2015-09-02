@@ -94,21 +94,25 @@ var Tools = {
     addAlert: function(message, options) {
         var $alert = $('<div class="alert"></div>');
         var $container = options.container ? $(options.container) : $('.main-container');
-        var type = 'danger';
+        var type = options.type || 'danger';
+        var scrollTo = options.scrollTo || true;
+        var clear = options.clear || true;
 
         if (options.className) {
             $alert.addClass(options.className);
         }
-        if (options.type) {
-            type = options.type;
-        }
+
         $alert.addClass('alert-'+type);
 
-        if (typeof options.clear == 'undefined' || options.clear == true) {
+        if (clear == true) {
             $container.find('.alert').remove();
         }
         $alert.text(message);
         $container.prepend($alert);
+
+        if (scrollTo) {
+            $('body').scrollTop(0);
+        }
     },
 
     showWait: function() {
