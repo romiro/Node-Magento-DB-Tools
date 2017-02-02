@@ -142,7 +142,7 @@ jQuery(function(){
                 .attr('id', tables[i])
                 .prop('checked', true)
                 .val(tables[i])
-                .appendTo(label);
+                .prependTo(label);
             container.append($chkContainer);
         }
         $('<div style="clear:both"></div>').appendTo(container);
